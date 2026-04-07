@@ -13,6 +13,7 @@ const AuthContext = createContext();
 // Puedes agregar o quitar correos electrónicos de esta lista para gestionar los permisos de administrador.
 const ADMIN_EMAILS = [
     "pythonpcmocoa@gmail.com", // El correo administrador original
+    "kathearistizabald@gmail.com",
     "pintowilmer138@gmail.com",  // Ejemplo de un segundo administrador
     "supervisor@tutienda.com",  // Ejemplo de un tercer administrador
 ];
