@@ -7,7 +7,6 @@ export default function Navbar() {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   
-  // Estado para detectar si es móvil y ajustar el logo
   const [isMobile, setIsMobile] = useState(window.innerWidth < 992);
 
   useEffect(() => {
@@ -21,13 +20,20 @@ export default function Navbar() {
     navigate("/login");
   };
 
+  // Estilo base para las dos partes del nombre
+  const brandTextStyle = {
+    color: '#3483fa', // El azul de Sanandresito
+    textTransform: 'uppercase',
+    fontWeight: '800', // Letra bien gruesa y fuerte
+    letterSpacing: '0.5px'
+  };
+
   return (
     <header>
       <nav className="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top py-2">
         <div className="container d-flex justify-content-between align-items-center">
           
-          {/* LOGO CON NOMBRE EN DOS LÍNEAS (MÓVIL) Y UNA LÍNEA (PC) */}
-          <Link to="/" className="navbar-brand d-flex align-items-center fw-bold" style={{ textDecoration: 'none' }}>
+          <Link to="/" className="navbar-brand d-flex align-items-center" style={{ textDecoration: 'none' }}>
             <img 
               src="/logo_Sanandresito.png" 
               alt="Logo" 
@@ -37,32 +43,29 @@ export default function Navbar() {
             <div style={{ 
               display: 'flex', 
               flexDirection: isMobile ? 'column' : 'row', 
-              lineHeight: '1.1',
+              lineHeight: '1', // Pegamos un poco más las líneas en móvil
               textAlign: 'left',
               alignItems: isMobile ? 'flex-start' : 'center'
             }}>
+              {/* PARTE 1: ALMACÉN (Ahora igual a la parte 2) */}
               <span style={{ 
-                fontSize: isMobile ? '13px' : '1.2rem', 
-                color: '#333', 
-                textTransform: 'uppercase',
-                letterSpacing: '0.5px'
+                ...brandTextStyle,
+                fontSize: isMobile ? '16px' : '1.2rem'
               }}>
                 Almacén
               </span>
               
+              {/* PARTE 2: SANANDRESITO */}
               <span style={{ 
-                fontSize: isMobile ? '16px' : '1.2rem', 
-                color: '#3483fa', 
-                textTransform: 'uppercase',
-                marginLeft: isMobile ? '0' : '6px',
-                fontWeight: '800'
+                ...brandTextStyle,
+                fontSize: isMobile ? '20px' : '1.2rem', // En móvil la marca principal destaca un poco más
+                marginLeft: isMobile ? '0' : '7px'
               }}>
                 Sanandresito
               </span>
             </div>
           </Link>
 
-          {/* BOTÓN HAMBURGUESA MÓVIL */}
           <button 
             className="navbar-toggler border-0" 
             type="button" 
@@ -71,7 +74,6 @@ export default function Navbar() {
             <span className="navbar-toggler-icon"></span>
           </button>
 
-          {/* MENÚ DE NAVEGACIÓN */}
           <div className={`collapse navbar-collapse ${menuOpen ? 'show' : ''}`}>
             <ul className="navbar-nav ms-auto align-items-center">
               <li className="nav-item"><Link to="/" className="nav-link px-3 fw-medium">Inicio</Link></li>
@@ -101,8 +103,8 @@ export default function Navbar() {
         </div>
       </nav>
 
-      {/* ESPACIADOR: Para que el contenido no se meta debajo de la barra fija */}
-      <div style={{ height: isMobile ? '80px' : '90px' }}></div>
+      {/* Ajuste de espacio superior para que no tape nada */}
+      <div style={{ height: isMobile ? '85px' : '90px' }}></div>
     </header>
   );
 }
