@@ -1,11 +1,20 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function Navbar() {
   const { user, isAdmin, logout } = useAuth();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
+  
+  // Estado para detectar si es móvil y ajustar el logo
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 992);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 992);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const handleLogout = async () => {
     await logout();
@@ -14,31 +23,46 @@ export default function Navbar() {
 
   return (
     <header>
-      <nav className="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top py-3">
+      <nav className="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top py-2">
         <div className="container d-flex justify-content-between align-items-center">
           
-          {/* LOGO CENTRADO Y ESTÉTICO */}
-          <Link 
-            to="/" 
-            className="navbar-brand d-flex align-items-center fw-bold"
-            style={{ letterSpacing: '0.5px' }}
-          >
+          {/* LOGO CON NOMBRE EN DOS LÍNEAS (MÓVIL) Y UNA LÍNEA (PC) */}
+          <Link to="/" className="navbar-brand d-flex align-items-center fw-bold" style={{ textDecoration: 'none' }}>
             <img 
               src="/logo_Sanandresito.png" 
               alt="Logo" 
-              style={{ height: '40px', marginRight: '10px' }} 
+              style={{ height: isMobile ? '35px' : '45px', marginRight: '10px' }} 
             />
-            <span style={{ 
-              fontSize: '1.2rem', 
-              color: '#333',
-              textTransform: 'uppercase',
-              display: 'inline-block'
+            
+            <div style={{ 
+              display: 'flex', 
+              flexDirection: isMobile ? 'column' : 'row', 
+              lineHeight: '1.1',
+              textAlign: 'left',
+              alignItems: isMobile ? 'flex-start' : 'center'
             }}>
-              Almacén <span style={{ color: '#3483fa' }}>Sanandresito</span>
-            </span>
+              <span style={{ 
+                fontSize: isMobile ? '13px' : '1.2rem', 
+                color: '#333', 
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px'
+              }}>
+                Almacén
+              </span>
+              
+              <span style={{ 
+                fontSize: isMobile ? '16px' : '1.2rem', 
+                color: '#3483fa', 
+                textTransform: 'uppercase',
+                marginLeft: isMobile ? '0' : '6px',
+                fontWeight: '800'
+              }}>
+                Sanandresito
+              </span>
+            </div>
           </Link>
 
-          {/* BOTÓN MENÚ MÓVIL */}
+          {/* BOTÓN HAMBURGUESA MÓVIL */}
           <button 
             className="navbar-toggler border-0" 
             type="button" 
@@ -47,7 +71,7 @@ export default function Navbar() {
             <span className="navbar-toggler-icon"></span>
           </button>
 
-          {/* LINKS DE NAVEGACIÓN */}
+          {/* MENÚ DE NAVEGACIÓN */}
           <div className={`collapse navbar-collapse ${menuOpen ? 'show' : ''}`}>
             <ul className="navbar-nav ms-auto align-items-center">
               <li className="nav-item"><Link to="/" className="nav-link px-3 fw-medium">Inicio</Link></li>
@@ -77,8 +101,8 @@ export default function Navbar() {
         </div>
       </nav>
 
-      {/* ESPACIADOR CORREGIDO: Aumentamos a 90px para dar más aire */}
-      <div style={{ height: '90px' }}></div>
+      {/* ESPACIADOR: Para que el contenido no se meta debajo de la barra fija */}
+      <div style={{ height: isMobile ? '80px' : '90px' }}></div>
     </header>
   );
 }
