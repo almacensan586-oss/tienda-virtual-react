@@ -1,36 +1,69 @@
-/* --- ALINEACIÓN DE IMÁGENES --- */
-.product-img-container {
-    height: 220px; /* Altura fija para que todas las filas empiecen igual */
+/* --- CONFIGURACIÓN PARA COMPUTADORA --- */
+.main-product-container {
+    height: 30rem; /* Tamaño grande en PC */
     display: flex;
-    align-items: center; /* Centra la imagen verticalmente si es bajita */
-    justify-content: center; /* Centra la imagen horizontalmente */
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
     background-color: #fff;
-    padding: 15px;
-    overflow: hidden;
 }
 
-.product-img-container img {
-    max-height: 100%;
-    max-width: 100%;
-    object-fit: contain; /* Ajusta la imagen sin deformarla y sin salirse del cuadro */
+.miniaturas-container {
+    max-height: 30rem;
+    overflow-y: auto;
+    min-width: 90px;
 }
 
-/* --- ALINEACIÓN DE TARJETAS --- */
-.card-hover-effect {
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    border-radius: 12px !important;
+.img-thumbnail {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    cursor: pointer;
+    transition: all 0.2s;
 }
 
-.card-hover-effect:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+.btn-success.btn-lg {
+    background-color: #25d366 !important;
+    border: none !important;
+    transition: transform 0.2s;
 }
 
-/* Forzar que el nombre no empuje el diseño hacia abajo */
-.card-title {
-    font-size: 1rem;
-    height: 1.4em; /* Altura de una línea */
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+.btn-success.btn-lg:hover {
+    background-color: #128c7e !important;
+    transform: scale(1.02);
+}
+
+/* --- CONFIGURACIÓN ESPECIAL PARA CELULAR (MÓVIL) --- */
+@media (max-width: 768px) {
+    /* Reducimos la altura de la imagen para que el botón suba */
+    .main-product-container {
+        height: 250px !important; 
+        margin-bottom: 10px;
+    }
+
+    /* Las miniaturas se vuelven horizontales en móvil para ahorrar espacio vertical */
+    .miniaturas-container {
+        flex-direction: row !important;
+        overflow-x: auto;
+        overflow-y: hidden;
+        max-height: auto;
+        width: 100%;
+        margin-bottom: 10px;
+    }
+
+    .img-thumbnail {
+        width: 60px !important;
+        height: 60px !important;
+        flex-shrink: 0;
+    }
+
+    /* Título más pequeño para que quepa todo mejor */
+    .display-6 {
+        font-size: 1.4rem !important;
+    }
+
+    .btn-success.btn-lg {
+        padding: 12px;
+        font-size: 1rem;
+    }
 }

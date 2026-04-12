@@ -13,7 +13,7 @@ export default function ProductoDetalle() {
     const [isZoomed, setIsZoomed] = useState(false); 
     const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 }); 
 
-    const WHATSAPP_NUMBER = "573001234567"; // 👈 Asegúrate de poner tu número real aquí
+    const WHATSAPP_NUMBER = "573001234567"; // Tu número real
 
     useEffect(() => {
         if (!id) {
@@ -33,13 +33,13 @@ export default function ProductoDetalle() {
                     data.imagenesUrls = images; 
                     
                     setProducto(data);
-                    setMainImage(images.length > 0 ? images[0] : 'https://via.placeholder.com/600x400?text=Imagen+No+Disponible'); 
+                    setMainImage(images.length > 0 ? images[0] : 'https://via.placeholder.com/600x400?text=Sin+Imagen'); 
                 } else {
                     setError("Producto no encontrado.");
                 }
             } catch (err) {
                 console.error("Error al cargar detalle:", err);
-                setError("Hubo un error al cargar los detalles del producto.");
+                setError("Hubo un error al cargar los detalles.");
             } finally {
                 setLoading(false);
             }
@@ -49,7 +49,7 @@ export default function ProductoDetalle() {
     }, [id]);
     
     const handleWhatsappClick = () => {
-        const message = `Hola, estoy interesado en el producto: ${producto.nombre} (Ref: ${producto.codigo}). Marca: ${producto.marca}. ¿Podrían darme más información?`;
+        const message = `Hola, estoy interesado en: ${producto.nombre} (Ref: ${producto.codigo}). Marca: ${producto.marca}.`;
         const encodedMessage = encodeURIComponent(message);
         window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`, '_blank');
     };
@@ -62,7 +62,7 @@ export default function ProductoDetalle() {
         setCursorPosition({ x, y });
     };
 
-    if (loading) return <div className="container my-5 text-center text-primary fs-5">Cargando detalles...</div>;
+    if (loading) return <div className="container my-5 text-center text-primary fs-5">Cargando...</div>;
     if (error) return <div className="container my-5 alert alert-danger text-center">{error}</div>;
     if (!producto) return null;
 
@@ -81,25 +81,26 @@ export default function ProductoDetalle() {
     return (
         <div className="container my-5">
             <div className="row mb-5 pb-5 border-bottom">
-                <div className="col-md-7 d-flex"> 
-                    {/* Miniaturas Laterales */}
+                
+                {/* Lado Izquierdo: Galería */}
+                <div className="col-md-7 d-flex flex-column flex-md-row"> 
+                    
+                    {/* Miniaturas */}
                     {producto.imagenesUrls.length > 1 && (
-                        <div className="d-flex flex-column gap-2 me-3" style={{ maxHeight: '32rem', overflowY: 'auto', minWidth: '95px' }}>
+                        <div className="miniaturas-container d-flex flex-row flex-md-column gap-2 mb-3 mb-md-0 me-md-3">
                             {producto.imagenesUrls.map((url, index) => (
                                 <img 
-                                    key={index} src={url} alt="Miniatura"
-                                    className={`img-thumbnail p-0 ${url === mainImage ? 'border-primary border-3' : 'border-secondary'}`}
-                                    style={{ width: '80px', height: '80px', objectFit: 'cover', cursor: 'pointer' }}
+                                    key={index} src={url} alt="Mini"
+                                    className={`img-thumbnail ${url === mainImage ? 'border-primary border-3' : 'border-secondary'}`}
                                     onClick={() => { setMainImage(url); setIsZoomed(false); }} 
                                 />
                             ))}
                         </div>
                     )}
 
-                    {/* Imagen Principal con Lupa */}
+                    {/* Imagen Principal */}
                     <div 
-                        className="card shadow-lg p-3 flex-grow-1"
-                        style={{ height: '32rem', overflow: 'hidden' }}
+                        className="card shadow-lg p-3 flex-grow-1 main-product-container"
                         onMouseEnter={() => setIsZoomed(true)} 
                         onMouseLeave={() => setIsZoomed(false)} 
                         onMouseMove={handleMouseMove} 
@@ -111,20 +112,18 @@ export default function ProductoDetalle() {
                     </div>
                 </div>
                 
-                {/* Información del Producto */}
-                <div className="col-md-5">
-                    <h1 className="display-5 fw-bold text-dark">{producto.nombre}</h1>
-                    <p className="text-muted small mb-4">
+                {/* Lado Derecho: Info */}
+                <div className="col-md-5 mt-4 mt-md-0">
+                    <h1 className="display-6 fw-bold text-dark">{producto.nombre}</h1>
+                    <p className="text-muted small mb-3">
                         <span className="fw-bold text-dark">Marca:</span> {producto.marca} | 
                         <span className="fw-bold text-dark ms-2">Categoría:</span> {producto.categoria}
                     </p>
-                    <p className="fw-bold fs-4">Ref: {producto.codigo}</p>
+                    <p className="fw-bold fs-5 mb-4">Código: {producto.codigo}</p>
 
-                    {/* BOTÓN WHATSAPP GRANDE Y VERDE */}
                     <button 
-                        className="btn btn-success btn-lg mt-3 w-100 shadow fw-bold py-3" 
+                        className="btn btn-success btn-lg w-100 shadow fw-bold py-3" 
                         onClick={handleWhatsappClick}
-                        style={{ backgroundColor: '#25d366', borderColor: '#25d366' }}
                     >
                         <i className="fab fa-whatsapp me-2"></i> Preguntar por WhatsApp
                     </button>
@@ -132,10 +131,10 @@ export default function ProductoDetalle() {
             </div>
 
             {/* Descripción */}
-            <div className="row mt-5">
+            <div className="row mt-4">
                 <div className="col-12">
                     <div className="card shadow-sm p-4 border-0 bg-light">
-                        <h3 className="text-primary fw-bold mb-3">Especificaciones</h3>
+                        <h4 className="text-primary fw-bold mb-3">Especificaciones</h4>
                         <p className="text-secondary" style={{ whiteSpace: 'pre-wrap' }}> 
                             {producto.descripcion}
                         </p>
