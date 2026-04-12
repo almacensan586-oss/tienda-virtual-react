@@ -1,34 +1,36 @@
-.btn-whatsapp-circle {
-    background-color: #25d366 !important;
-    color: white !important;
-    border: none !important;
-    outline: none !important;
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 28px;
-    box-shadow: 0 4px 10px rgba(37, 211, 102, 0.3);
-    cursor: pointer;
-    padding: 0;
-    transition: transform 0.2s ease;
-}
-
-.btn-whatsapp-circle:hover {
-    transform: scale(1.1);
-    background-color: #128c7e !important;
-}
-
-.card-hover-effect {
-    transition: all 0.3s ease;
-    border-radius: 15px !important;
-}
-
+/* --- ALINEACIÓN DE IMÁGENES --- */
 .product-img-container {
-    height: 180px;
+    height: 220px; /* Altura fija para que todas las filas empiecen igual */
     display: flex;
-    align-items: center;
-    justify-content: center;
+    align-items: center; /* Centra la imagen verticalmente si es bajita */
+    justify-content: center; /* Centra la imagen horizontalmente */
+    background-color: #fff;
+    padding: 15px;
+    overflow: hidden;
+}
+
+.product-img-container img {
+    max-height: 100%;
+    max-width: 100%;
+    object-fit: contain; /* Ajusta la imagen sin deformarla y sin salirse del cuadro */
+}
+
+/* --- ALINEACIÓN DE TARJETAS --- */
+.card-hover-effect {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border-radius: 12px !important;
+}
+
+.card-hover-effect:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+}
+
+/* Forzar que el nombre no empuje el diseño hacia abajo */
+.card-title {
+    font-size: 1rem;
+    height: 1.4em; /* Altura de una línea */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
