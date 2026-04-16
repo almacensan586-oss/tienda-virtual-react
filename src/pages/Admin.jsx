@@ -23,8 +23,7 @@ const CATEGORIAS_PRODUCTOS = [
         value: "Video",
         options: [
             { label: "Televisores", value: "Televisores" },
-            { label: "Soportes", value: "Soportes" },
-            { label: "Accesorios Video", value: "Accesorios Video" }
+            { label: "Bases para Televisores", value: "Bases para Televisores" }
         ]
     },
     { 
@@ -33,7 +32,7 @@ const CATEGORIAS_PRODUCTOS = [
         options: [
             { label: "Computadores", value: "Computadores" },
             { label: "Celulares", value: "Celulares" },
-            { label: "Relojes Inteligentes", value: "Relojes" },
+            { label: "Relojes Inteligentes", value: "Relojes Inteligentes" },
             { label: "Tablets", value: "Tablets" }
         ]
     },
@@ -60,11 +59,7 @@ const CATEGORIAS_PRODUCTOS = [
             { label: "Hornos", value: "Hornos" },
             { label: "Licuadora", value: "Licuadora" },
             { label: "Olla Arrocera", value: "Olla Arrocera" },
-            { label: "Olla a Presión", value: "Olla a Presión" },
-            { label: "Sanducheras", value: "Sanducheras" },
-            { label: "Estufas", value: "Estufas" },
-            { label: "Vajillas", value: "Vajillas" },
-            { label: "Extractores de Jugo", value: "Extractores de Jugo" }
+            { label: "Olla a Presión", value: "Olla a Presión" }
         ]
     },
     { label: "Lavado", value: "Lavado" },
