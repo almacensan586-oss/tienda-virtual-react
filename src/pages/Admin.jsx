@@ -30,10 +30,13 @@ const CATEGORIAS_PRODUCTOS = [
         label: "Tecnología", 
         value: "Tecnología",
         options: [
-            { label: "Computadores", value: "Computadores" },
+            { label: "Computadores portátiles", value: "Computadores portátiles" },
+            { label: "Gamer", value: "Gamer" },
             { label: "Celulares", value: "Celulares" },
-            { label: "Relojes Inteligentes", value: "Relojes Inteligentes" },
-            { label: "Tablets", value: "Tablets" }
+            { label: "Tablet", value: "Tablet" },
+            { label: "Monitores", value: "Monitores" },
+            { label: "Accesorios", value: "Accesorios" },
+            { label: "Repuestos para portátil", value: "Repuestos para portátil" }
         ]
     },
     { 
@@ -62,15 +65,33 @@ const CATEGORIAS_PRODUCTOS = [
             { label: "Olla a Presión", value: "Olla a Presión" }
         ]
     },
-    { label: "Lavado", value: "Lavado" },
-    { label: "Mueblería", value: "Mueblería" },
+    { 
+        label: "Lavado", 
+        value: "Lavado", 
+        options: [
+            { label: "Lavadoras automáticas", value: "Lavadoras automáticas" },
+            { label: "Lavadoras semiautomáticas", value: "Lavadoras semiautomáticas" }
+        ] 
+    },
+    { 
+        label: "Mueblería", 
+        value: "Mueblería", 
+        options: [
+            { label: "Salas", value: "Salas" },
+            { label: "Comedores", value: "Comedores" },
+            { label: "Alcobas", value: "Alcobas" },
+            { label: "Colchones", value: "Colchones" },
+            { label: "Base camas", value: "Base camas" }
+        ] 
+    },
     { 
         label: "Oficina", 
-        value: "Oficina",
+        value: "Oficina", 
         options: [
             { label: "Escritorios", value: "Escritorios" },
-            { label: "Sillas de Oficina", value: "Sillas de Oficina" }
-        ]
+            { label: "Sillas Ergonómicas", value: "Sillas Ergonómicas" },
+            { label: "Sillas Gamer", value: "Sillas Gamer" }
+        ] 
     }
 ];
 
