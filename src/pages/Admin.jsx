@@ -81,10 +81,10 @@ const CATEGORIAS_PRODUCTOS = [
             { label: "Basecamas y Espaldares", value: "Basecamas y Espaldares" },
             { label: "Armario", value: "Armario" },
             { label: "Nocheros", value: "Nocheros" },
-            { label: "Juegos de Sala", value: "Juegos de Sala" }
-            { label: "Sofacamas", value: "Sofacamas" }
-            { label: "Comedores", value: "Comedores" }
-            { label: "Alacenas (Piso y Pared)", value: "Alacenas (Piso y Pared)" }
+            { label: "Juegos de Sala", value: "Juegos de Sala" },
+            { label: "Sofacamas", value: "Sofacamas" },
+            { label: "Comedores", value: "Comedores" },
+            { label: "Alacenas (Piso y Pared)", value: "Alacenas (Piso y Pared)" },
             { label: "Espejos y Tocadores", value: "Espejos y Tocadores" }
         ] 
     },
