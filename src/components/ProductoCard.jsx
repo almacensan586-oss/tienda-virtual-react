@@ -5,36 +5,33 @@ import { Link } from 'react-router-dom';
 const ProductoCard = ({ producto, onEliminar, onModificar }) => {
     const { isAdmin } = useAuth(); 
 
-    const primaryImageUrl = (producto.imagenesUrls && producto.imagenesUrls.length > 0) 
+    const imagen = (producto.imagenesUrls && producto.imagenesUrls.length > 0) 
         ? producto.imagenesUrls[0] 
-        : 'https://via.placeholder.com/400x300?text=SIN+IMAGEN';
+        : 'https://via.placeholder.com/300';
 
     return (
         <div className="col">
-            <div className="card h-100 shadow-sm border-0 card-hover-effect">
-                {/* Contenedor de imagen con altura fija */}
-                <Link to={`/productos/${producto.id}`} className="product-img-container">
-                    <img src={primaryImageUrl} className="card-img-top" alt={producto.nombre} />
+            <div className="card h-100 shadow-sm border-0 overflow-hidden">
+                <Link to={`/productos/${producto.id}`}>
+                    <img src={imagen} className="card-img-top p-3" alt={producto.nombre} style={{ height: '200px', objectFit: 'contain' }} />
                 </Link>
-                
-                <div className="card-body d-flex flex-column text-center">
-                    <h6 className="text-primary fw-bold mb-1 small text-uppercase">{producto.marca}</h6>
-                    <h5 className="card-title fw-bold text-dark text-truncate mb-2">{producto.nombre}</h5>
-                    <p className="text-muted small mb-0">Ref: {producto.codigo}</p>
-                    <p className="text-secondary small mb-3">{producto.categoria}</p>
-
-                    <div className="mt-auto">
-                        {isAdmin && (
-                            <div className="d-flex justify-content-between mt-2 gap-2 border-top pt-3"> 
-                                <button className="btn btn-outline-info btn-sm flex-fill" onClick={() => onModificar(producto.id)}>
-                                    <i className="fas fa-edit"></i>
-                                </button>
-                                <button className="btn btn-outline-danger btn-sm flex-fill" onClick={() => onEliminar(producto.id)}>
-                                    <i className="fas fa-trash"></i>
-                                </button>
-                            </div>
-                        )}
+                <div className="card-body d-flex flex-column text-center pt-0">
+                    <small className="text-primary fw-bold text-uppercase">{producto.marca}</small>
+                    <h6 className="card-title fw-bold text-dark text-truncate">{producto.nombre}</h6>
+                    
+                    <div className="my-2">
+                        <span className="badge bg-light text-dark border me-1">{producto.categoria}</span>
+                        {producto.subcategoria && <span className="badge bg-info-subtle text-info border border-info-subtle">{producto.subcategoria}</span>}
                     </div>
+
+                    <p className="small text-muted mb-3">Ref: {producto.codigo}</p>
+
+                    {isAdmin && (
+                        <div className="d-flex gap-2 mt-auto border-top pt-2">
+                            <button className="btn btn-sm btn-outline-primary w-100" onClick={() => onModificar(producto.id)}>Editar</button>
+                            <button className="btn btn-sm btn-outline-danger w-100" onClick={() => onEliminar(producto.id)}>Borrar</button>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

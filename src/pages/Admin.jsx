@@ -1,48 +1,50 @@
-//Adamin.jsx
 import React, { useState, useEffect } from "react";
-// 🚨 REVISA ESTA RUTA: Debe apuntar correctamente a tu archivo firebase.jsx
 import { db, storage } from "../firebase"; 
 import { collection, addDoc, doc, getDoc, updateDoc } from "firebase/firestore"; 
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { useSearchParams, useNavigate } from "react-router-dom"; 
 
-// ======================================================================
-// CONSTANTES
-// ======================================================================
-const MAX_IMAGES = 10; // Límite de imágenes actualizado a 10
+const MAX_IMAGES = 10;
 
+// ESTRUCTURA EXACTA DEL MENÚ LATERAL (Navbar/Sidebar)
 const CATEGORIAS_PRODUCTOS = [
-    { label: "Audio", value: "Audio" },
-    { label: "Televisores (TV)", value: "TV" },
-    { label: "Mueblería", value: "Muebleria" },
-    { label: "Congeladores", value: "Congeladores" },
-    { label: "Escritorios", value: "Escritorios" },
-    { label: "Sillas de Oficina", value: "Sillas Oficina" },
+    { label: "Sonido", value: "Sonido" },
+    { label: "Video", value: "Video" },
     { label: "Tecnología", options: [
-        { label: "Computadores", value: "Tecnologia-Computadores" },
-        { label: "Celulares", value: "Tecnologia-Celulares" }
+        { label: "Computadores", value: "Computadores" },
+        { label: "Celulares", value: "Celulares" }
     ]},
-    { label: "Electro Menores", options: [
-        { label: "Licuadoras", value: "Electro-Licuadoras" },
-        { label: "Sanducheras", value: "Electro-Sanducheras" },
-        { label: "Vajillas", value: "Electro-Vajillas" },
-        { label: "Freidoras", value: "Electro-Freidoras" },
-        { label: "Hornos", value: "Electro-Hornos" },
-        { label: "Estufas", value: "Electro-Estufas" },
-        { label: "Baldes", value: "Electro-Baldes" },
-        { label: "Cestas", value: "Electro-Cestas" },
-        { label: "Cubiertos", value: "Electro-Cubiertos" },
-        { label: "Extractores de Jugo", value: "Electro-Extractores" }
+    { label: "Refrigeración", options: [
+        { label: "Congeladores", value: "Congeladores" },
+        { label: "Exhibidores", value: "Exhibidores" },
+        { label: "Minibar", value: "Minibar" },
+        { label: "Vitrinas", value: "Vitrinas" },
+        { label: "Neveras", value: "Neveras" },
+        { label: "Nevecones", value: "Nevecones" }
+    ]},
+    { label: "Cocina", options: [
+        { label: "Cafeteras", value: "Cafeteras" },
+        { label: "Exprimidor", value: "Exprimidor" },
+        { label: "Freidora", value: "Freidora" },
+        { label: "Hervidor", value: "Hervidor" },
+        { label: "Hornos", value: "Hornos" },
+        { label: "Licuadora", value: "Licuadora" },
+        { label: "Olla Arrocera", value: "Olla Arrocera" },
+        { label: "Olla a Presión", value: "Olla a Presión" },
+        { label: "Sanducheras", value: "Sanducheras" },
+        { label: "Estufas", value: "Estufas" }
+    ]},
+    { label: "Lavado", value: "Lavado" },
+    { label: "Mueblería", value: "Mueblería" },
+    { label: "Oficina", options: [
+        { label: "Escritorios", value: "Escritorios" },
+        { label: "Sillas de Oficina", value: "Sillas de Oficina" }
     ]}
 ];
 
 export default function Admin() {
-    
-    // ======================================================================
-    // ESTADOS 
-    // ======================================================================
     const [formData, setFormData] = useState({ 
-        nombre: "", categoria: "", codigo: "", descripcion: "", 
+        nombre: "", categoria: "", subcategoria: "", codigo: "", descripcion: "", 
         marca: "", imagenesUrls: []   
     });
     const [mensaje, setMensaje] = useState(null);
@@ -51,24 +53,15 @@ export default function Admin() {
     const [subiendo, setSubiendo] = useState(false);
     const [progreso, setProgreso] = useState(0);
 
-    const productosRef = collection(db, "productos");
-
-    // Lógica de Edición
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
     const productoId = searchParams.get("productoId"); 
     const [isEditing, setIsEditing] = useState(false); 
-    
-    // ======================================================================
-    // FUNCIONES DE UTILIDAD Y LÓGICA
-    // ======================================================================
 
     const mostrarMensaje = (msg, tipo) => {
         setMensaje(msg);
         setTipoMensaje(tipo);
-        setTimeout(() => {
-            setMensaje(null);
-        }, 4000);
+        setTimeout(() => setMensaje(null), 4000);
     };
 
     const handleChange = (e) => {
@@ -76,366 +69,113 @@ export default function Admin() {
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
-    const handleRemoveImage = (indexToRemove) => {
-        const newUrls = formData.imagenesUrls.filter((_, index) => index !== indexToRemove);
-        setFormData(prev => ({ 
-            ...prev, 
-            imagenesUrls: newUrls 
-        }));
-        mostrarMensaje(`Imagen ${indexToRemove + 1} eliminada de la galería local.`, "info");
+    const handleCategoriaChange = (e) => {
+        const value = e.target.value;
+        setFormData(prev => ({ ...prev, categoria: value, subcategoria: "" }));
     };
 
     const handleUpload = () => {
-        if (!imagenArchivo) {
-            mostrarMensaje("Selecciona un archivo de imagen primero.", "error");
-            return;
-        }
-        
-        // VALIDACIÓN DE LÍMITE (MAX_IMAGES = 10)
-        if (formData.imagenesUrls.length >= MAX_IMAGES) {
-            mostrarMensaje(`Máximo ${MAX_IMAGES} imágenes permitidas en la galería.`, "error");
-            return;
-        }
+        if (!imagenArchivo) return mostrarMensaje("Selecciona una imagen", "error");
+        if (formData.imagenesUrls.length >= MAX_IMAGES) return mostrarMensaje("Límite alcanzado", "error");
 
         const fileName = `${Date.now()}_${imagenArchivo.name}`;
         const storageRef = ref(storage, `imagenes_productos/${fileName}`);
         const uploadTask = uploadBytesResumable(storageRef, imagenArchivo);
         setSubiendo(true);
 
-        uploadTask.on(
-            'state_changed',
-            (snapshot) => {
-                const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
-                setProgreso(progress);
-            },
-            (error) => {
-                setSubiendo(false);
-                setProgreso(0);
-                console.error("Error al subir imagen:", error);
-                mostrarMensaje(`Error de subida: ${error.message}`, "error"); 
-            },
+        uploadTask.on('state_changed', 
+            (snapshot) => setProgreso(Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100)),
+            (error) => { setSubiendo(false); mostrarMensaje(error.message, "error"); },
             () => {
                 setSubiendo(false);
                 getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-                    setFormData(prev => ({ 
-                        ...prev, 
-                        imagenesUrls: [...prev.imagenesUrls, downloadURL] 
-                    }));
-                    setImagenArchivo(null); 
-                    mostrarMensaje(`Imagen ${formData.imagenesUrls.length + 1} subida con éxito.`, "exito");
+                    setFormData(prev => ({ ...prev, imagenesUrls: [...prev.imagenesUrls, downloadURL] }));
+                    setImagenArchivo(null);
+                    setProgreso(0);
                 });
             }
         );
     };
 
-    // ======================================================================
-    // EFECTO DE CARGA PARA EDICIÓN (LÓGICA DE FIREBASE RESTAURADA)
-    // ======================================================================
     useEffect(() => {
-        // Esta función solo se ejecuta si hay un productoId en la URL
         if (productoId) {
             setIsEditing(true);
-            const fetchProducto = async () => {
-                try {
-                    // 🚨 Conexión a Firestore usando 'db' 🚨
-                    const docRef = doc(db, "productos", productoId);
-                    const docSnap = await getDoc(docRef);
-
-                    if (docSnap.exists()) {
-                        const data = docSnap.data();
-                        
-                        // Cargar datos en el formulario
-                        const loadedData = { 
-                            ...data,
-                            imagenesUrls: data.imagenesUrls || [], 
-                            codigo: data.codigo || "",
-                            marca: data.marca || "",
-                        };
-                        setFormData(loadedData);
-                        mostrarMensaje("Modo Modificación: Producto cargado.", "info"); 
-                    } else {
-                        mostrarMensaje("Producto para modificar no encontrado.", "error");
-                        navigate("/admin", { replace: true });
-                    }
-                } catch (error) {
-                    // Muestra el error de conexión en la consola para depuración
-                    console.error("Error al cargar datos de edición desde Firestore:", error);
-                    mostrarMensaje("Error al cargar datos de edición. Revisar conexión a DB.", "error");
-                    navigate("/admin", { replace: true });
-                }
-            };
-            fetchProducto();
-        } else {
-            // Modo Creación: Limpia el estado
-            setIsEditing(false);
-            setFormData({ nombre: "", categoria: "", codigo: "", descripcion: "", marca: "", imagenesUrls: [] });
+            getDoc(doc(db, "productos", productoId)).then(docSnap => {
+                if (docSnap.exists()) setFormData({ ...docSnap.data(), id: docSnap.id });
+            });
         }
-    }, [productoId, navigate]); 
+    }, [productoId]);
 
-    // ======================================================================
-    // FUNCIÓN handleSubmit (CREACIÓN Y MODIFICACIÓN)
-    // ======================================================================
     const handleSubmit = async (e) => {
         e.preventDefault();
-
-        // 1. Validaciones
-        if (formData.imagenesUrls.length === 0) {
-            mostrarMensaje("Debes subir al menos una imagen a la galería.", "error");
-            return;
-        }
-        if (!formData.nombre || !formData.categoria || !formData.codigo || !formData.marca) {
-            mostrarMensaje("Por favor, completa el nombre, categoría, código y marca.", "error");
-            return;
-        }
-
-        const dataToSave = {
-            nombre: formData.nombre,
-            categoria: formData.categoria,
-            codigo: formData.codigo,
-            descripcion: formData.descripcion,
-            marca: formData.marca,
-            imagenesUrls: formData.imagenesUrls,
-        };
+        if (formData.imagenesUrls.length === 0) return mostrarMensaje("Sube al menos una imagen", "error");
 
         try {
-            if (isEditing) {
-                // MODO MODIFICAR
-                const productoDoc = doc(db, "productos", productoId);
-                await updateDoc(productoDoc, dataToSave);
-                mostrarMensaje("Producto MODIFICADO con éxito.", "exito");
-            } else {
-                // MODO CREAR
-                await addDoc(productosRef, {
-                    ...dataToSave,
-                    fechaCreacion: new Date(), 
-                });
-                mostrarMensaje("Producto AGREGADO con éxito.", "exito");
-            }
-            
-            // Limpiar formulario y navegar si estábamos editando
-            setFormData({ nombre: "", categoria: "", codigo: "", descripcion: "", marca: "", imagenesUrls: [] });
-            setImagenArchivo(null);
-            setProgreso(0);
-            setIsEditing(false);
-            
-            if (isEditing) {
-                navigate("/admin", { replace: true });
-            }
+            const dataToSave = { ...formData, fechaActualizacion: new Date() };
+            delete dataToSave.id; // Evitar guardar el ID dentro del documento
 
+            if (isEditing) {
+                await updateDoc(doc(db, "productos", productoId), dataToSave);
+                mostrarMensaje("¡Producto actualizado!", "exito");
+            } else {
+                await addDoc(collection(db, "productos"), { ...dataToSave, fechaCreacion: new Date() });
+                mostrarMensaje("¡Producto publicado!", "exito");
+            }
+            setTimeout(() => navigate("/admin"), 1500);
         } catch (error) {
-            console.error("Error al guardar/modificar producto:", error);
-            mostrarMensaje("Error en la operación con Firestore.", "error");
+            mostrarMensaje("Error al guardar", "error");
         }
     };
 
-    // ======================================================================
-    // RENDERIZADO (Diseño con Bootstrap 5) - JSX FINAL
-    // ======================================================================
+    const subcategoriasDisponibles = CATEGORIAS_PRODUCTOS.find(c => c.label === formData.categoria)?.options || [];
+
     return (
-        <div className="container my-5"> 
+        <div className="container my-5 pb-5">
+            {mensaje && <div className={`alert alert-${tipoMensaje === "exito" ? "success" : "danger"} fixed-top m-4 shadow`}>{mensaje}</div>}
             
-            {/* Mensaje de Notificación (Toast flotante) */}
-            {mensaje && (
-                <div 
-                    className={`alert alert-${tipoMensaje === "exito" ? "success" : "danger"} 
-                                 fixed-top end-0 m-4 shadow-lg`}
-                    style={{ zIndex: 1050 }} 
-                    role="alert"
-                >
-                    {mensaje}
+            <h2 className="text-center text-primary fw-bold mb-4">{isEditing ? "EDITAR" : "NUEVO"} PRODUCTO</h2>
+            
+            <form onSubmit={handleSubmit} className="card shadow-lg p-4 border-0">
+                <div className="row g-3 text-start">
+                    <div className="col-md-6">
+                        <label className="fw-bold">Nombre</label>
+                        <input name="nombre" value={formData.nombre} onChange={handleChange} className="form-control" required />
+                    </div>
+                    <div className="col-md-6">
+                        <label className="fw-bold">Marca</label>
+                        <input name="marca" value={formData.marca} onChange={handleChange} className="form-control" required />
+                    </div>
+                    <div className="col-md-6">
+                        <label className="fw-bold">Categoría Principal</label>
+                        <select name="categoria" value={formData.categoria} onChange={handleCategoriaChange} className="form-select" required>
+                            <option value="">Seleccione...</option>
+                            {CATEGORIAS_PRODUCTOS.map(cat => <option key={cat.label} value={cat.label}>{cat.label}</option>)}
+                        </select>
+                    </div>
+                    <div className="col-md-6">
+                        <label className="fw-bold">Subcategoría</label>
+                        <select name="subcategoria" value={formData.subcategoria} onChange={handleChange} className="form-select" disabled={!formData.categoria}>
+                            <option value="">{subcategoriasDisponibles.length > 0 ? "Especifique..." : "N/A"}</option>
+                            {subcategoriasDisponibles.map(sub => <option key={sub.value} value={sub.value}>{sub.label}</option>)}
+                        </select>
+                    </div>
+                    <div className="col-12">
+                        <label className="fw-bold">Referencia (Código)</label>
+                        <input name="codigo" value={formData.codigo} onChange={handleChange} className="form-control" required />
+                    </div>
+                    <div className="col-12 mt-4">
+                        <label className="fw-bold">Galería (Máx 10)</label>
+                        <div className="input-group">
+                            <input type="file" className="form-control" onChange={(e) => setImagenArchivo(e.target.files[0])} />
+                            <button type="button" onClick={handleUpload} className="btn btn-dark" disabled={subiendo}>{subiendo ? "..." : "Subir"}</button>
+                        </div>
+                        <div className="d-flex flex-wrap gap-2 mt-2">
+                            {formData.imagenesUrls.map((url, i) => <img key={i} src={url} className="rounded border" style={{width:'60px', height:'60px', objectFit:'cover'}} />)}
+                        </div>
+                    </div>
+                    <button type="submit" className="btn btn-primary btn-lg mt-5 fw-bold">FINALIZAR Y GUARDAR</button>
                 </div>
-            )}
-
-            {/* TÍTULO DINÁMICO */}
-            <h2 className="mb-5 text-center text-primary fw-bold">
-                {isEditing ? "MODIFICAR PRODUCTO EXISTENTE" : "AGREGAR NUEVO PRODUCTO"}
-            </h2>
-
-            <div className="row justify-content-center">
-                <div className="col-lg-10">
-                    <form onSubmit={handleSubmit}>
-                        
-                        {/* CARD 1: Información Principal */}
-                        <div className="card shadow-lg mb-4">
-                            <div className="card-header bg-light text-primary fw-bold">
-                                Información Básica del Producto
-                            </div>
-                            <div className="card-body">
-                                <div className="row g-3">
-                                    
-                                    {/* NOMBRE DEL PRODUCTO */}
-                                    <div className="col-md-6">
-                                        <label htmlFor="nombre" className="form-label fw-bold">NOMBRE DEL PRODUCTO</label>
-                                        <input
-                                            type="text" name="nombre" value={formData.nombre} onChange={handleChange}
-                                            className="form-control" 
-                                            id="nombre" placeholder="Ej: Parlante de Torre JLC" required
-                                        />
-                                    </div>
-
-                                    {/* MARCA */}
-                                    <div className="col-md-6">
-                                        <label htmlFor="marca" className="form-label fw-bold">MARCA</label>
-                                        <input
-                                            type="text" name="marca" value={formData.marca} onChange={handleChange}
-                                            className="form-control" 
-                                            id="marca" placeholder="Ej: Samsung, LG, Oster" required
-                                        />
-                                    </div>
-
-                                    {/* CATEGORÍA (CAMPO DESPLEGABLE) */}
-                                    <div className="col-md-6">
-                                        <label htmlFor="categoria" className="form-label fw-bold">CATEGORÍA</label>
-                                        <select
-                                            name="categoria" 
-                                            value={formData.categoria} 
-                                            onChange={handleChange}
-                                            className="form-select"
-                                            id="categoria" 
-                                            required
-                                        >
-                                            <option value="" disabled>Seleccionar Categoría...</option>
-                                            {CATEGORIAS_PRODUCTOS.map((cat, index) => (
-                                                cat.options ? (
-                                                    <optgroup key={index} label={cat.label}>
-                                                        {cat.options.map((opt) => (
-                                                            <option key={opt.value} value={opt.value}>
-                                                                {opt.label}
-                                                            </option>
-                                                        ))}
-                                                    </optgroup>
-                                                ) : (
-                                                    <option key={cat.value} value={cat.value}>
-                                                        {cat.label}
-                                                    </option>
-                                                )
-                                            ))}
-                                        </select>
-                                    </div>
-                                    
-                                    {/* CÓDIGO */}
-                                    <div className="col-md-6">
-                                        <label htmlFor="codigo" className="form-label fw-bold">CÓDIGO</label>
-                                        <input
-                                            type="text" name="codigo" value={formData.codigo} onChange={handleChange}
-                                            className="form-control"
-                                            id="codigo" placeholder="Ej: JLC-15CYDL" required
-                                        />
-                                    </div>
-
-                                    {/* DESCRIPCIÓN */}
-                                    <div className="col-12"> 
-                                        <label htmlFor="descripcion" className="form-label fw-bold">DESCRIPCIÓN</label>
-                                        <textarea
-                                            name="descripcion" value={formData.descripcion} onChange={handleChange}
-                                            className="form-control"
-                                            id="descripcion" rows="3" placeholder="Detalles técnicos y características principales..."
-                                        ></textarea>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* CARD 2: Gestión de Imagen y Subida (Galería) */}
-                        <div className="card shadow-lg mb-4">
-                            <div className="card-header bg-light text-primary fw-bold">
-                                Subida de Imágenes (Galería)
-                            </div>
-                            <div className="card-body">
-                                <div className="row align-items-center g-3">
-                                    
-                                    <div className="col-md-8">
-                                        <label htmlFor="imagen" className="form-label fw-bold">Seleccionar Archivo</label>
-                                        <input
-                                            className="form-control" 
-                                            type="file" 
-                                            id="imagen" 
-                                            accept="image/*" 
-                                            onChange={(e) => setImagenArchivo(e.target.files[0])}
-                                            disabled={subiendo || formData.imagenesUrls.length >= MAX_IMAGES} 
-                                        />
-                                        <div className="form-text">Máximo {MAX_IMAGES} imágenes.</div>
-                                    </div>
-                                    
-                                    <div className="col-md-4 d-grid">
-                                        <button
-                                            type="button" onClick={handleUpload} 
-                                            disabled={subiendo || !imagenArchivo || formData.imagenesUrls.length >= MAX_IMAGES}
-                                            className={`btn btn-primary ${subiendo ? "disabled" : ""}`}
-                                        >
-                                            {subiendo ? `Subiendo... ${progreso}%` : "Añadir Imagen a Galería"}
-                                        </button>
-                                    </div>
-                                    
-                                    {/* Barra de Progreso */}
-                                    {subiendo && (
-                                        <div className="col-12 mt-3">
-                                            <div className="progress">
-                                                <div 
-                                                    className="progress-bar progress-bar-striped progress-bar-animated" 
-                                                    role="progressbar" 
-                                                    style={{ width: `${progreso}%` }} 
-                                                    aria-valuenow={progreso} 
-                                                    aria-valuemin="0" 
-                                                    aria-valuemax="100"
-                                                >
-                                                    {progreso}%
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {/* VISTA PREVIA Y GESTIÓN DE LAS IMÁGENES SUBIDAS */}
-                                    {formData.imagenesUrls.length > 0 && (
-                                        <div className="col-12 mt-3">
-                                            <h6 className="fw-bold">Galería de Imágenes ({formData.imagenesUrls.length})</h6>
-                                            <div className="d-flex flex-wrap gap-2">
-                                                {formData.imagenesUrls.map((url, index) => (
-                                                    <div key={index} className="position-relative border p-1 rounded">
-                                                        <img src={url} alt={`Vista ${index + 1}`} style={{ width: '80px', height: '80px', objectFit: 'cover' }} />
-                                                        <button 
-                                                            type="button" 
-                                                            className="btn btn-danger btn-sm position-absolute top-0 end-0 p-0"
-                                                            style={{ lineHeight: '1', width: '20px', height: '20px' }}
-                                                            onClick={() => handleRemoveImage(index)}
-                                                        >
-                                                            &times;
-                                                        </button>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                            <p className="text-success fw-bold mt-2">
-                                                ✅ Galería lista para guardar.
-                                            </p>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Botón de Submit Final - DINÁMICO */}
-                        <div className="d-grid gap-2 col-md-6 mx-auto mt-5"> 
-                            <button
-                                type="submit"
-                                className={`btn ${isEditing ? 'btn-warning' : 'btn-success'} btn-lg shadow-sm`} 
-                            >
-                                {isEditing ? "GUARDAR MODIFICACIONES" : "AGREGAR PRODUCTO"}
-                            </button>
-                            
-                            {/* BOTÓN CANCELAR (Visible solo en modo Edición) */}
-                            {isEditing && (
-                                <button
-                                    type="button"
-                                    className="btn btn-secondary btn-lg"
-                                    onClick={() => navigate("/admin", { replace: true })}
-                                >
-                                    Cancelar Edición
-                                </button>
-                            )}
-                        </div>
-                    </form>
-                </div>
-            </div>
+            </form>
         </div>
     );
 }
