@@ -6,40 +6,77 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 
 const MAX_IMAGES = 10;
 
-// ESTRUCTURA EXACTA DEL MENÚ LATERAL (Navbar/Sidebar)
+// Estructura completa basada en tus menús laterales reales
 const CATEGORIAS_PRODUCTOS = [
-    { label: "Sonido", value: "Sonido" },
-    { label: "Video", value: "Video" },
-    { label: "Tecnología", options: [
-        { label: "Computadores", value: "Computadores" },
-        { label: "Celulares", value: "Celulares" }
-    ]},
-    { label: "Refrigeración", options: [
-        { label: "Congeladores", value: "Congeladores" },
-        { label: "Exhibidores", value: "Exhibidores" },
-        { label: "Minibar", value: "Minibar" },
-        { label: "Vitrinas", value: "Vitrinas" },
-        { label: "Neveras", value: "Neveras" },
-        { label: "Nevecones", value: "Nevecones" }
-    ]},
-    { label: "Cocina", options: [
-        { label: "Cafeteras", value: "Cafeteras" },
-        { label: "Exprimidor", value: "Exprimidor" },
-        { label: "Freidora", value: "Freidora" },
-        { label: "Hervidor", value: "Hervidor" },
-        { label: "Hornos", value: "Hornos" },
-        { label: "Licuadora", value: "Licuadora" },
-        { label: "Olla Arrocera", value: "Olla Arrocera" },
-        { label: "Olla a Presión", value: "Olla a Presión" },
-        { label: "Sanducheras", value: "Sanducheras" },
-        { label: "Estufas", value: "Estufas" }
-    ]},
+    { 
+        label: "Sonido", 
+        value: "Sonido", 
+        options: [
+            { label: "Cabinas", value: "Cabinas" },
+            { label: "Cabinas profesionales", value: "Cabinas profesionales" },
+            { label: "Torres de sonido", value: "Torres de sonido" },
+            { label: "Parlantes portables", value: "Parlantes portables" }
+        ] 
+    },
+    { 
+        label: "Video", 
+        value: "Video",
+        options: [
+            { label: "Televisores", value: "Televisores" },
+            { label: "Soportes", value: "Soportes" },
+            { label: "Accesorios Video", value: "Accesorios Video" }
+        ]
+    },
+    { 
+        label: "Tecnología", 
+        value: "Tecnología",
+        options: [
+            { label: "Computadores", value: "Computadores" },
+            { label: "Celulares", value: "Celulares" },
+            { label: "Relojes Inteligentes", value: "Relojes" },
+            { label: "Tablets", value: "Tablets" }
+        ]
+    },
+    { 
+        label: "Refrigeración", 
+        value: "Refrigeración",
+        options: [
+            { label: "Congeladores", value: "Congeladores" },
+            { label: "Exhibidores", value: "Exhibidores" },
+            { label: "Minibar", value: "Minibar" },
+            { label: "Vitrinas", value: "Vitrinas" },
+            { label: "Neveras", value: "Neveras" },
+            { label: "Nevecones", value: "Nevecones" }
+        ]
+    },
+    { 
+        label: "Cocina", 
+        value: "Cocina",
+        options: [
+            { label: "Cafeteras", value: "Cafeteras" },
+            { label: "Exprimidor", value: "Exprimidor" },
+            { label: "Freidora", value: "Freidora" },
+            { label: "Hervidor", value: "Hervidor" },
+            { label: "Hornos", value: "Hornos" },
+            { label: "Licuadora", value: "Licuadora" },
+            { label: "Olla Arrocera", value: "Olla Arrocera" },
+            { label: "Olla a Presión", value: "Olla a Presión" },
+            { label: "Sanducheras", value: "Sanducheras" },
+            { label: "Estufas", value: "Estufas" },
+            { label: "Vajillas", value: "Vajillas" },
+            { label: "Extractores de Jugo", value: "Extractores de Jugo" }
+        ]
+    },
     { label: "Lavado", value: "Lavado" },
     { label: "Mueblería", value: "Mueblería" },
-    { label: "Oficina", options: [
-        { label: "Escritorios", value: "Escritorios" },
-        { label: "Sillas de Oficina", value: "Sillas de Oficina" }
-    ]}
+    { 
+        label: "Oficina", 
+        value: "Oficina",
+        options: [
+            { label: "Escritorios", value: "Escritorios" },
+            { label: "Sillas de Oficina", value: "Sillas de Oficina" }
+        ]
+    }
 ];
 
 export default function Admin() {
@@ -74,6 +111,11 @@ export default function Admin() {
         setFormData(prev => ({ ...prev, categoria: value, subcategoria: "" }));
     };
 
+    const handleRemoveImage = (indexToRemove) => {
+        const newUrls = formData.imagenesUrls.filter((_, index) => index !== indexToRemove);
+        setFormData(prev => ({ ...prev, imagenesUrls: newUrls }));
+    };
+
     const handleUpload = () => {
         if (!imagenArchivo) return mostrarMensaje("Selecciona una imagen", "error");
         if (formData.imagenesUrls.length >= MAX_IMAGES) return mostrarMensaje("Límite alcanzado", "error");
@@ -92,6 +134,7 @@ export default function Admin() {
                     setFormData(prev => ({ ...prev, imagenesUrls: [...prev.imagenesUrls, downloadURL] }));
                     setImagenArchivo(null);
                     setProgreso(0);
+                    mostrarMensaje("Imagen subida con éxito", "exito");
                 });
             }
         );
@@ -100,9 +143,13 @@ export default function Admin() {
     useEffect(() => {
         if (productoId) {
             setIsEditing(true);
-            getDoc(doc(db, "productos", productoId)).then(docSnap => {
-                if (docSnap.exists()) setFormData({ ...docSnap.data(), id: docSnap.id });
-            });
+            const fetchProducto = async () => {
+                const docSnap = await getDoc(doc(db, "productos", productoId));
+                if (docSnap.exists()) {
+                    setFormData({ ...docSnap.data(), id: docSnap.id });
+                }
+            };
+            fetchProducto();
         }
     }, [productoId]);
 
@@ -111,19 +158,27 @@ export default function Admin() {
         if (formData.imagenesUrls.length === 0) return mostrarMensaje("Sube al menos una imagen", "error");
 
         try {
-            const dataToSave = { ...formData, fechaActualizacion: new Date() };
-            delete dataToSave.id; // Evitar guardar el ID dentro del documento
+            const dataToSave = {
+                nombre: formData.nombre,
+                categoria: formData.categoria,
+                subcategoria: formData.subcategoria,
+                codigo: formData.codigo,
+                descripcion: formData.descripcion,
+                marca: formData.marca,
+                imagenesUrls: formData.imagenesUrls,
+                fechaActualizacion: new Date()
+            };
 
             if (isEditing) {
                 await updateDoc(doc(db, "productos", productoId), dataToSave);
-                mostrarMensaje("¡Producto actualizado!", "exito");
+                mostrarMensaje("Producto modificado correctamente", "exito");
             } else {
                 await addDoc(collection(db, "productos"), { ...dataToSave, fechaCreacion: new Date() });
-                mostrarMensaje("¡Producto publicado!", "exito");
+                mostrarMensaje("Producto agregado correctamente", "exito");
             }
             setTimeout(() => navigate("/admin"), 1500);
         } catch (error) {
-            mostrarMensaje("Error al guardar", "error");
+            mostrarMensaje("Error al guardar en base de datos", "error");
         }
     };
 
@@ -131,51 +186,89 @@ export default function Admin() {
 
     return (
         <div className="container my-5 pb-5">
-            {mensaje && <div className={`alert alert-${tipoMensaje === "exito" ? "success" : "danger"} fixed-top m-4 shadow`}>{mensaje}</div>}
-            
-            <h2 className="text-center text-primary fw-bold mb-4">{isEditing ? "EDITAR" : "NUEVO"} PRODUCTO</h2>
-            
-            <form onSubmit={handleSubmit} className="card shadow-lg p-4 border-0">
-                <div className="row g-3 text-start">
-                    <div className="col-md-6">
-                        <label className="fw-bold">Nombre</label>
-                        <input name="nombre" value={formData.nombre} onChange={handleChange} className="form-control" required />
-                    </div>
-                    <div className="col-md-6">
-                        <label className="fw-bold">Marca</label>
-                        <input name="marca" value={formData.marca} onChange={handleChange} className="form-control" required />
-                    </div>
-                    <div className="col-md-6">
-                        <label className="fw-bold">Categoría Principal</label>
-                        <select name="categoria" value={formData.categoria} onChange={handleCategoriaChange} className="form-select" required>
-                            <option value="">Seleccione...</option>
-                            {CATEGORIAS_PRODUCTOS.map(cat => <option key={cat.label} value={cat.label}>{cat.label}</option>)}
-                        </select>
-                    </div>
-                    <div className="col-md-6">
-                        <label className="fw-bold">Subcategoría</label>
-                        <select name="subcategoria" value={formData.subcategoria} onChange={handleChange} className="form-select" disabled={!formData.categoria}>
-                            <option value="">{subcategoriasDisponibles.length > 0 ? "Especifique..." : "N/A"}</option>
-                            {subcategoriasDisponibles.map(sub => <option key={sub.value} value={sub.value}>{sub.label}</option>)}
-                        </select>
-                    </div>
-                    <div className="col-12">
-                        <label className="fw-bold">Referencia (Código)</label>
-                        <input name="codigo" value={formData.codigo} onChange={handleChange} className="form-control" required />
-                    </div>
-                    <div className="col-12 mt-4">
-                        <label className="fw-bold">Galería (Máx 10)</label>
-                        <div className="input-group">
-                            <input type="file" className="form-control" onChange={(e) => setImagenArchivo(e.target.files[0])} />
-                            <button type="button" onClick={handleUpload} className="btn btn-dark" disabled={subiendo}>{subiendo ? "..." : "Subir"}</button>
-                        </div>
-                        <div className="d-flex flex-wrap gap-2 mt-2">
-                            {formData.imagenesUrls.map((url, i) => <img key={i} src={url} className="rounded border" style={{width:'60px', height:'60px', objectFit:'cover'}} />)}
-                        </div>
-                    </div>
-                    <button type="submit" className="btn btn-primary btn-lg mt-5 fw-bold">FINALIZAR Y GUARDAR</button>
+            {mensaje && (
+                <div className={`alert alert-${tipoMensaje === "exito" ? "success" : "danger"} fixed-top end-0 m-4 shadow-lg`} style={{ zIndex: 1050 }}>
+                    {mensaje}
                 </div>
-            </form>
+            )}
+
+            <h2 className="mb-5 text-center text-primary fw-bold">
+                {isEditing ? "MODIFICAR PRODUCTO" : "AGREGAR NUEVO PRODUCTO"}
+            </h2>
+
+            <div className="row justify-content-center">
+                <div className="col-lg-10">
+                    <form onSubmit={handleSubmit}>
+                        <div className="card shadow-lg mb-4 border-0">
+                            <div className="card-header bg-primary text-white fw-bold py-3">Información General</div>
+                            <div className="card-body p-4">
+                                <div className="row g-4 text-start">
+                                    <div className="col-md-6">
+                                        <label className="form-label fw-bold">NOMBRE DEL PRODUCTO</label>
+                                        <input type="text" name="nombre" value={formData.nombre} onChange={handleChange} className="form-control" placeholder="Ej: Parlante JLC 2000W" required />
+                                    </div>
+                                    <div className="col-md-6">
+                                        <label className="form-label fw-bold">MARCA</label>
+                                        <input type="text" name="marca" value={formData.marca} onChange={handleChange} className="form-control" placeholder="Ej: JLC" required />
+                                    </div>
+                                    <div className="col-md-6">
+                                        <label className="form-label fw-bold">CATEGORÍA PRINCIPAL</label>
+                                        <select name="categoria" value={formData.categoria} onChange={handleCategoriaChange} className="form-select" required>
+                                            <option value="">Seleccionar Categoría...</option>
+                                            {CATEGORIAS_PRODUCTOS.map(cat => <option key={cat.label} value={cat.label}>{cat.label}</option>)}
+                                        </select>
+                                    </div>
+                                    <div className="col-md-6">
+                                        <label className="form-label fw-bold">SUBCATEGORÍA</label>
+                                        <select name="subcategoria" value={formData.subcategoria} onChange={handleChange} className="form-select" disabled={!formData.categoria}>
+                                            <option value="">{subcategoriasDisponibles.length > 0 ? "Seleccione específica..." : "N/A (No requiere)"}</option>
+                                            {subcategoriasDisponibles.map(sub => <option key={sub.value} value={sub.value}>{sub.label}</option>)}
+                                        </select>
+                                    </div>
+                                    <div className="col-md-12">
+                                        <label className="form-label fw-bold">CÓDIGO / REFERENCIA</label>
+                                        <input type="text" name="codigo" value={formData.codigo} onChange={handleChange} className="form-control" placeholder="Ej: JLC-14290" required />
+                                    </div>
+                                    <div className="col-12">
+                                        <label className="form-label fw-bold">DESCRIPCIÓN</label>
+                                        <textarea name="descripcion" value={formData.descripcion} onChange={handleChange} className="form-control" rows="3" placeholder="Detalles técnicos..."></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="card shadow-lg mb-4 border-0">
+                            <div className="card-header bg-primary text-white fw-bold py-3">Galería de Imágenes</div>
+                            <div className="card-body p-4 text-start">
+                                <div className="row g-3 align-items-center">
+                                    <div className="col-md-8">
+                                        <input type="file" className="form-control" onChange={(e) => setImagenArchivo(e.target.files[0])} disabled={subiendo} />
+                                    </div>
+                                    <div className="col-md-4 d-grid">
+                                        <button type="button" onClick={handleUpload} className="btn btn-dark fw-bold" disabled={subiendo || !imagenArchivo}>
+                                            {subiendo ? `Subiendo ${progreso}%` : "Añadir Imagen"}
+                                        </button>
+                                    </div>
+                                    <div className="d-flex flex-wrap gap-3 mt-4">
+                                        {formData.imagenesUrls.map((url, index) => (
+                                            <div key={index} className="position-relative border p-2 rounded bg-white shadow-sm" style={{ width: '100px' }}>
+                                                <img src={url} alt="preview" style={{ width: '100%', height: '80px', objectFit: 'contain' }} />
+                                                <button type="button" className="btn btn-danger btn-sm position-absolute top-0 end-0 rounded-circle m-1" style={{width: '24px', height: '24px', padding: '0'}} onClick={() => handleRemoveImage(index)}>&times;</button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="d-grid gap-2 col-md-6 mx-auto mt-5 pb-5">
+                            <button type="submit" className={`btn ${isEditing ? 'btn-warning' : 'btn-primary'} btn-lg shadow fw-bold py-3`}>
+                                {isEditing ? "GUARDAR CAMBIOS" : "FINALIZAR Y GUARDAR"}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
     );
 }
