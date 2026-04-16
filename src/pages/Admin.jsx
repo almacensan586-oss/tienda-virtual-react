@@ -77,11 +77,15 @@ const CATEGORIAS_PRODUCTOS = [
         label: "Mueblería", 
         value: "Mueblería", 
         options: [
-            { label: "Salas", value: "Salas" },
-            { label: "Comedores", value: "Comedores" },
-            { label: "Alcobas", value: "Alcobas" },
             { label: "Colchones", value: "Colchones" },
-            { label: "Base camas", value: "Base camas" }
+            { label: "Basecamas y Espaldares", value: "Basecamas y Espaldares" },
+            { label: "Armario", value: "Armario" },
+            { label: "Nocheros", value: "Nocheros" },
+            { label: "Juegos de Sala", value: "Juegos de Sala" }
+            { label: "Sofacamas", value: "Sofacamas" }
+            { label: "Comedores", value: "Comedores" }
+            { label: "Alacenas (Piso y Pared)", value: "Alacenas (Piso y Pared)" }
+            { label: "Espejos y Tocadores", value: "Espejos y Tocadores" }
         ] 
     },
     { 
