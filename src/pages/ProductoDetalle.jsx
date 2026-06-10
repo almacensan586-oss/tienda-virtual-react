@@ -44,7 +44,7 @@ export default function ProductoDetalle() {
     if (loading) return <div style={{textAlign:'center', padding:'100px', fontSize:'20px'}}>Cargando Almacén Sanandresito...</div>;
     if (!producto) return <div className="container my-5 alert alert-danger">Producto no encontrado.</div>;
 
-    // --- ESTILOS ---
+    // --- ESTILOS MEJORADOS ---
     const s = {
         wrapper: {
             display: 'flex',
@@ -56,13 +56,16 @@ export default function ProductoDetalle() {
             borderRadius: '12px',
             boxShadow: isMobile ? 'none' : '0 2px 15px rgba(0,0,0,0.05)'
         },
-        // Nuevo estilo para el contenedor de descripción
+        // NUEVA TARJETA PREMIUM PARA LA DESCRIPCIÓN
         descContainer: {
-            backgroundColor: '#fff',
-            padding: isMobile ? '20px' : '30px',
-            marginTop: '20px',
-            borderRadius: '12px',
-            boxShadow: '0 2px 15px rgba(0,0,0,0.05)'
+            backgroundColor: '#1e293b', // Fondo oscuro moderno (Slate 800)
+            color: '#f8fafc',           // Texto claro contrastante (Slate 50)
+            padding: isMobile ? '20px' : '40px',
+            marginTop: '30px',
+            marginBottom: '40px',
+            borderRadius: '16px',        // Bordes más suaves y curvos
+            boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3)',
+            border: '1px solid #334155'  // Borde sutil para dar relieve
         },
         gallerySection: {
             display: 'flex',
@@ -166,14 +169,24 @@ export default function ProductoDetalle() {
                 </div>
             </div>
 
-            {/* 2. SECCIÓN INFERIOR: Descripción (Ocupa todo el ancho) */}
+            {/* 2. SECCIÓN INFERIOR: Nueva sección con diseño "Dark Card" */}
             <div style={s.descContainer}>
-                <h5 className="fw-bold mb-3">Descripción detallada</h5>
+                <div className="d-flex align-items-center mb-4 border-bottom pb-3" style={{borderColor: '#475569 !important'}}>
+                    <div className="bg-primary p-2 rounded-3 me-3 text-white d-flex align-items-center justify-content-center" style={{width: '40px', height: '40px'}}>
+                        <i className="bi bi-file-earmark-text fs-5"></i>
+                    </div>
+                    <h4 className="fw-bold mb-0" style={{color: '#ffffff', letterSpacing: '0.5px'}}>
+                        Especificaciones y Descripción
+                    </h4>
+                </div>
+                
                 <p style={{
-                    whiteSpace:'pre-wrap', 
-                    lineHeight:'1.8', 
-                    color:'#444', 
-                    fontSize: isMobile ? '15px' : '16px'
+                    whiteSpace: 'pre-wrap', 
+                    lineHeight: '1.9', 
+                    color: '#cbd5e1', // Gris claro suave para evitar fatiga visual (Slate 300)
+                    fontSize: isMobile ? '15px' : '16px',
+                    letterSpacing: '0.2px',
+                    paddingLeft: isMobile ? '0px' : '8px'
                 }}>
                     {producto.descripcion}
                 </p>
