@@ -13,6 +13,16 @@ export default function Productos() {
     const [error, setError] = useState(null);
     const navigate = useNavigate(); 
 
+    // Función auxiliar para quitar tildes, espacios extra y dejar en minúsculas
+    const normalizarTexto = (texto) => {
+        if (!texto) return '';
+        return texto
+            .trim()
+            .toLowerCase()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, ""); // Remueve acentos de forma limpia
+    };
+
     // Cargar todos los productos desde Firestore
     const fetchProductos = async () => {
         try {
@@ -61,7 +71,7 @@ export default function Productos() {
         loadData();
     }, []);
 
-    // Efecto encargado del filtrado por categoría o subcategoría
+    // Efecto encargado del filtrado inteligente por categoría o subcategoría
     useEffect(() => {
         if (allProducts.length === 0) {
             setProductos([]);
@@ -71,15 +81,35 @@ export default function Productos() {
         if (activeCategory === "") {
             setProductos(allProducts);
         } else {
-            const targetCategory = activeCategory.trim().toLowerCase();
+            // Normalizamos el término del menú lateral que seleccionó el usuario
+            const targetCategory = normalizarTexto(activeCategory);
 
             const filtered = allProducts.filter(product => {
-                // Obtenemos los campos de texto de manera segura evitando valores nulos
-                const categoriaProd = (product.categoria || '').trim().toLowerCase();
-                const subcategoriaProd = (product.subcategoria || '').trim().toLowerCase();
+                // Obtenemos y normalizamos de forma segura los valores de la base de datos
+                const categoriaProd = normalizarTexto(product.categoria);
+                const subcategoriaProd = normalizarTexto(product.subcategoria);
 
-                // Compara si la selección coincide exactamente con la categoría principal O con la subcategoría
-                return categoriaProd === targetCategory || subcategoriaProd === targetCategory;
+                // CASO ESPECIAL: Si se selecciona la categoría principal "Tecnología"
+                if (targetCategory === 'tecnologia') {
+                    return (
+                        categoriaProd === 'tecnologia' ||
+                        subcategoriaProd.includes('portatil') ||
+                        subcategoriaProd.includes('gamer') ||
+                        subcategoriaProd.includes('celular') ||
+                        subcategoriaProd.includes('tablet') ||
+                        subcategoriaProd.includes('monitor') ||
+                        subcategoriaProd.includes('accesorio') ||
+                        subcategoriaProd.includes('repuesto')
+                    );
+                }
+
+                // CASO GENERAL: Comparación exacta o parcial (útil para "Computadores portátiles" o "Celulares")
+                return (
+                    categoriaProd === targetCategory || 
+                    subcategoriaProd === targetCategory ||
+                    subcategoriaProd.includes(targetCategory) ||
+                    targetCategory.includes(subcategoriaProd)
+                );
             });
 
             setProductos(filtered);
