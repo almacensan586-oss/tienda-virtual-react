@@ -10,8 +10,6 @@ export default function ProductoDetalle() {
     const [mainImage, setMainImage] = useState(''); 
     const [isZoomed, setIsZoomed] = useState(false); 
     const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 }); 
-
-    // Detectamos si es móvil para ajustar el diseño y márgenes
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
     const WHATSAPP_NUMBER = "573001234567"; 
@@ -46,7 +44,7 @@ export default function ProductoDetalle() {
     if (loading) return <div style={{textAlign:'center', padding:'100px', fontSize:'20px'}}>Cargando Almacén Sanandresito...</div>;
     if (!producto) return <div className="container my-5 alert alert-danger">Producto no encontrado.</div>;
 
-    // --- ESTILOS FINALES Y RESPONSIVOS ---
+    // --- ESTILOS ---
     const s = {
         wrapper: {
             display: 'flex',
@@ -54,10 +52,17 @@ export default function ProductoDetalle() {
             gap: isMobile ? '20px' : '40px',
             backgroundColor: '#fff',
             padding: isMobile ? '15px' : '30px',
-            // MARGEN SUPERIOR: Ajustado para que no choque con la Navbar fija
             marginTop: isMobile ? '10px' : '30px', 
             borderRadius: '12px',
             boxShadow: isMobile ? 'none' : '0 2px 15px rgba(0,0,0,0.05)'
+        },
+        // Nuevo estilo para el contenedor de descripción
+        descContainer: {
+            backgroundColor: '#fff',
+            padding: isMobile ? '20px' : '30px',
+            marginTop: '20px',
+            borderRadius: '12px',
+            boxShadow: '0 2px 15px rgba(0,0,0,0.05)'
         },
         gallerySection: {
             display: 'flex',
@@ -103,7 +108,6 @@ export default function ProductoDetalle() {
             maxWidth: '100%',
             maxHeight: '100%',
             objectFit: 'contain',
-            // Efecto lupa solo para escritorio
             transform: (!isMobile && isZoomed) ? 'scale(2)' : 'scale(1)',
             transformOrigin: `${cursorPosition.x * 100}% ${cursorPosition.y * 100}%`,
             transition: isZoomed ? 'none' : 'transform 0.2s ease-out'
@@ -117,11 +121,9 @@ export default function ProductoDetalle() {
 
     return (
         <div className="container-xl">
+            {/* 1. SECCIÓN SUPERIOR: Galería + Botón Compra */}
             <div style={s.wrapper}>
-                
-                {/* LADO IZQUIERDO: GALERÍA */}
                 <div style={s.gallerySection}>
-                    {/* Miniaturas */}
                     <div style={s.thumbsTrack}>
                         {producto.imagenesUrls.map((url, i) => (
                             <img 
@@ -135,7 +137,6 @@ export default function ProductoDetalle() {
                         ))}
                     </div>
 
-                    {/* Visor Principal */}
                     <div 
                         style={s.viewer}
                         onMouseEnter={() => !isMobile && setIsZoomed(true)} 
@@ -146,7 +147,6 @@ export default function ProductoDetalle() {
                     </div>
                 </div>
 
-                {/* LADO DERECHO: INFORMACIÓN */}
                 <div style={s.infoSide}>
                     <span className="text-muted small mb-1">Nuevo | Almacén Sanandresito</span>
                     <h1 style={{fontSize: isMobile ? '22px' : '28px', fontWeight:'700', marginBottom:'8px', color:'#333'}}>
@@ -163,20 +163,20 @@ export default function ProductoDetalle() {
                     >
                         <i className="fab fa-whatsapp me-2"></i> Preguntar por WhatsApp
                     </button>
-
-                    <div style={{marginTop:'40px', borderTop:'1px solid #eee', paddingTop:'25px'}}>
-                        <h5 className="fw-bold mb-3">Descripción detallada</h5>
-                        <p style={{
-                            whiteSpace:'pre-wrap', 
-                            lineHeight:'1.8', 
-                            color:'#444', 
-                            fontSize: isMobile ? '15px' : '16px'
-                        }}>
-                            {producto.descripcion}
-                        </p>
-                    </div>
                 </div>
+            </div>
 
+            {/* 2. SECCIÓN INFERIOR: Descripción (Ocupa todo el ancho) */}
+            <div style={s.descContainer}>
+                <h5 className="fw-bold mb-3">Descripción detallada</h5>
+                <p style={{
+                    whiteSpace:'pre-wrap', 
+                    lineHeight:'1.8', 
+                    color:'#444', 
+                    fontSize: isMobile ? '15px' : '16px'
+                }}>
+                    {producto.descripcion}
+                </p>
             </div>
         </div>
     );
