@@ -13,6 +13,7 @@ export default function Productos() {
     const [error, setError] = useState(null);
     const navigate = useNavigate(); 
 
+    // Cargar todos los productos desde Firestore
     const fetchProductos = async () => {
         try {
             const productosCollection = collection(db, "productos");
@@ -30,6 +31,7 @@ export default function Productos() {
         }
     };
     
+    // Eliminar un producto del catálogo
     const eliminarProducto = async (id) => {
         if (!window.confirm("¿Eliminar este producto?")) return;
         try {
@@ -44,6 +46,7 @@ export default function Productos() {
     const modificarProducto = (id) => navigate(`/admin?productoId=${id}`); 
     const handleCategoryChange = (category) => setActiveCategory(category);
 
+    // Efecto para inicializar la carga de datos de la tienda
     useEffect(() => {
         const loadData = async () => {
             try {
@@ -58,17 +61,27 @@ export default function Productos() {
         loadData();
     }, []);
 
+    // Efecto encargado del filtrado por categoría o subcategoría
     useEffect(() => {
         if (allProducts.length === 0) {
             setProductos([]);
             return;
         }
+
         if (activeCategory === "") {
             setProductos(allProducts);
         } else {
-            const filtered = allProducts.filter(product => 
-                (product.categoria?.toLowerCase() || '').includes(activeCategory.toLowerCase())
-            );
+            const targetCategory = activeCategory.trim().toLowerCase();
+
+            const filtered = allProducts.filter(product => {
+                // Obtenemos los campos de texto de manera segura evitando valores nulos
+                const categoriaProd = (product.categoria || '').trim().toLowerCase();
+                const subcategoriaProd = (product.subcategoria || '').trim().toLowerCase();
+
+                // Compara si la selección coincide exactamente con la categoría principal O con la subcategoría
+                return categoriaProd === targetCategory || subcategoriaProd === targetCategory;
+            });
+
             setProductos(filtered);
         }
     }, [activeCategory, allProducts]);
