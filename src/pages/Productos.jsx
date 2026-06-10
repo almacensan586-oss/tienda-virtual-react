@@ -13,14 +13,14 @@ export default function Productos() {
     const [error, setError] = useState(null);
     const navigate = useNavigate(); 
 
-    // Función auxiliar para quitar tildes, espacios extra y dejar en minúsculas
+    // Función de normalización: quita tildes, espacios y deja en minúsculas
     const normalizarTexto = (texto) => {
         if (!texto) return '';
         return texto
             .trim()
             .toLowerCase()
             .normalize("NFD")
-            .replace(/[\u0300-\u036f]/g, ""); // Remueve acentos limpiamente
+            .replace(/[\u0300-\u036f]/g, "");
     };
 
     // Cargar todos los productos desde Firestore
@@ -71,32 +71,57 @@ export default function Productos() {
         loadData();
     }, []);
 
-    // Efecto encargado del filtrado preciso por categoría o subcategoría
+    // Efecto encargado del filtrado híbrido y flexible
     useEffect(() => {
         if (allProducts.length === 0) {
             setProductos([]);
             return;
         }
 
-        // Si la barra no tiene nada seleccionado, muestra absolutamente todo en la tienda
         if (activeCategory === "") {
             setProductos(allProducts);
         } else {
-            const targetCategory = normalizarTexto(activeCategory);
+            const target = normalizarTexto(activeCategory);
 
             const filtered = allProducts.filter(product => {
+                // Unificamos los campos de categoría y subcategoría en una sola cadena de búsqueda segura
                 const categoriaProd = normalizarTexto(product.categoria);
                 const subcategoriaProd = normalizarTexto(product.subcategoria);
+                const textoCompletoTienda = `${categoriaProd} ${subcategoriaProd}`;
 
-                // REGLA 1: Si se hace clic en la categoría padre "Tecnología"
-                if (targetCategory === 'tecnologia') {
-                    // Trae absolutamente todo lo que pertenezca a la categoría principal de tecnología
-                    return categoriaProd === 'tecnologia';
+                // CASO 1: Si se hace clic en la categoría principal "Tecnología"
+                if (target === 'tecnologia') {
+                    // Muestra todo lo que contenga la palabra "tecnologia" en su categoría
+                    // (Esto atrapará tanto "Tecnología" como "Tecnología-Celulares")
+                    return categoriaProd.includes('tecnologia');
                 }
 
-                // REGLA 2: Si es una subcategoría específica ("computadores portatiles", "celulares", etc.)
-                // Debe coincidir exactamente con el campo subcategoría de la base de datos
-                return subcategoriaProd === targetCategory;
+                // CASO 2: Si es una subcategoría ("celulares", "gamer", "computadores portatiles")
+                // Mapeo flexible para variaciones en el nombre del menú ("Portátiles" vs "Computadores portátiles")
+                if (target === 'celulares' || target === 'celular') {
+                    return textoCompletoTienda.includes('celular');
+                }
+                if (target === 'gamer') {
+                    return textoCompletoTienda.includes('gamer');
+                }
+                if (target === 'computadores portatiles' || target === 'portatiles' || target === 'portatil') {
+                    return textoCompletoTienda.includes('portatil');
+                }
+                if (target === 'tablet' || target === 'tablets') {
+                    return textoCompletoTienda.includes('tablet');
+                }
+                if (target === 'monitores' || target === 'monitor') {
+                    return textoCompletoTienda.includes('monitor');
+                }
+                if (target === 'accesorios' || target === 'accesorio') {
+                    return textoCompletoTienda.includes('accesorio');
+                }
+                if (target === 'repuestos para portatil' || target === 'repuestos' || target === 'repuesto') {
+                    return textoCompletoTienda.includes('repuesto');
+                }
+
+                // CASO POR DEFECTO: Para cualquier otra categoría del sistema (Mueblería, Cocina, Sonido, etc.)
+                return categoriaProd.includes(target) || subcategoriaProd.includes(target);
             });
 
             setProductos(filtered);
