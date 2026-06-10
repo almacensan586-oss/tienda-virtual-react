@@ -20,7 +20,7 @@ export default function Productos() {
             .trim()
             .toLowerCase()
             .normalize("NFD")
-            .replace(/[\u0300-\u036f]/g, ""); // Remueve acentos de forma limpia
+            .replace(/[\u0300-\u036f]/g, ""); // Remueve acentos limpiamente
     };
 
     // Cargar todos los productos desde Firestore
@@ -71,45 +71,32 @@ export default function Productos() {
         loadData();
     }, []);
 
-    // Efecto encargado del filtrado inteligente por categoría o subcategoría
+    // Efecto encargado del filtrado preciso por categoría o subcategoría
     useEffect(() => {
         if (allProducts.length === 0) {
             setProductos([]);
             return;
         }
 
+        // Si la barra no tiene nada seleccionado, muestra absolutamente todo en la tienda
         if (activeCategory === "") {
             setProductos(allProducts);
         } else {
-            // Normalizamos el término del menú lateral que seleccionó el usuario
             const targetCategory = normalizarTexto(activeCategory);
 
             const filtered = allProducts.filter(product => {
-                // Obtenemos y normalizamos de forma segura los valores de la base de datos
                 const categoriaProd = normalizarTexto(product.categoria);
                 const subcategoriaProd = normalizarTexto(product.subcategoria);
 
-                // CASO ESPECIAL: Si se selecciona la categoría principal "Tecnología"
+                // REGLA 1: Si se hace clic en la categoría padre "Tecnología"
                 if (targetCategory === 'tecnologia') {
-                    return (
-                        categoriaProd === 'tecnologia' ||
-                        subcategoriaProd.includes('portatil') ||
-                        subcategoriaProd.includes('gamer') ||
-                        subcategoriaProd.includes('celular') ||
-                        subcategoriaProd.includes('tablet') ||
-                        subcategoriaProd.includes('monitor') ||
-                        subcategoriaProd.includes('accesorio') ||
-                        subcategoriaProd.includes('repuesto')
-                    );
+                    // Trae absolutamente todo lo que pertenezca a la categoría principal de tecnología
+                    return categoriaProd === 'tecnologia';
                 }
 
-                // CASO GENERAL: Comparación exacta o parcial (útil para "Computadores portátiles" o "Celulares")
-                return (
-                    categoriaProd === targetCategory || 
-                    subcategoriaProd === targetCategory ||
-                    subcategoriaProd.includes(targetCategory) ||
-                    targetCategory.includes(subcategoriaProd)
-                );
+                // REGLA 2: Si es una subcategoría específica ("computadores portatiles", "celulares", etc.)
+                // Debe coincidir exactamente con el campo subcategoría de la base de datos
+                return subcategoriaProd === targetCategory;
             });
 
             setProductos(filtered);
