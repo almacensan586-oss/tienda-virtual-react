@@ -56,30 +56,31 @@ export default function ProductoDetalle() {
             borderRadius: '12px',
             boxShadow: isMobile ? 'none' : '0 2px 15px rgba(0,0,0,0.05)'
         },
-        // NUEVA TARJETA PREMIUM PARA LA DESCRIPCIÓN
         descContainer: {
-            backgroundColor: '#1e293b', // Fondo oscuro moderno (Slate 800)
-            color: '#f8fafc',           // Texto claro contrastante (Slate 50)
+            backgroundColor: '#1e293b', 
+            color: '#f8fafc',          
             padding: isMobile ? '20px' : '40px',
             marginTop: '30px',
             marginBottom: '40px',
-            borderRadius: '16px',        // Bordes más suaves y curvos
+            borderRadius: '16px',        
             boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3)',
-            border: '1px solid #334155'  // Borde sutil para dar relieve
+            border: '1px solid #334155'  
         },
         gallerySection: {
             display: 'flex',
             flexDirection: isMobile ? 'column-reverse' : 'row',
-            gap: '15px',
+            gap: '20px',                  // Un poco más de separación limpia
             width: isMobile ? '100%' : '650px',
-            height: isMobile ? 'auto' : '550px'
+            height: isMobile ? 'auto' : '550px',
+            alignItems: 'flex-start'      // Alinea las miniaturas al tope superior izquierdo
         },
         thumbsTrack: {
             display: 'flex',
             flexDirection: isMobile ? 'row' : 'column',
             gap: '10px',
-            width: isMobile ? '100%' : '65px',
-            overflowX: isMobile ? 'auto' : 'hidden',
+            width: isMobile ? '100%' : '55px', // Reducido al tamaño exacto de la miniatura para que no ocupe espacio de más
+            overflowX: isMobile ? 'auto' : 'visible', // Quitamos cualquier scroll oculto en PC
+            overflowY: isMobile ? 'auto' : 'visible', // Evita que aparezcan barras grises de scroll
             paddingBottom: isMobile ? '10px' : '0',
             flexShrink: 0
         },
@@ -92,7 +93,8 @@ export default function ProductoDetalle() {
             objectFit: 'contain',
             padding: '3px',
             cursor: 'pointer',
-            backgroundColor: '#fff'
+            backgroundColor: '#fff',
+            transition: 'border-color 0.2s ease' // Suaviza el cambio de selección
         },
         viewer: {
             flex: 1,
@@ -103,7 +105,7 @@ export default function ProductoDetalle() {
             borderRadius: '8px',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center',
+            justify: 'center',
             backgroundColor: '#fff',
             cursor: isMobile ? 'default' : (isZoomed ? 'zoom-out' : 'zoom-in')
         },
@@ -183,7 +185,7 @@ export default function ProductoDetalle() {
                 <p style={{
                     whiteSpace: 'pre-wrap', 
                     lineHeight: '1.9', 
-                    color: '#cbd5e1', // Gris claro suave para evitar fatiga visual (Slate 300)
+                    color: '#cbd5e1', 
                     fontSize: isMobile ? '15px' : '16px',
                     letterSpacing: '0.2px',
                     paddingLeft: isMobile ? '0px' : '8px'
