@@ -12,9 +12,8 @@ export default function ProductoDetalle() {
     const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 }); 
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
-    // Estado para controlar el carrusel de miniaturas en PC
-    const [thumbIndex, setThumbIndex] = useState(0);
-    const maxVisibleThumbs = 5; // Número de miniaturas visibles a la vez
+    // Referencia al contenedor de miniaturas para controlar el scroll mediante código
+    const thumbsTrackRef = useRef(null);
 
     const WHATSAPP_NUMBER = "573001234567"; 
 
@@ -45,21 +44,21 @@ export default function ProductoDetalle() {
         setCursorPosition({ x: (e.clientX - left) / width, y: (e.clientY - top) / height });
     };
 
-    // Funciones para mover las miniaturas
-    const handlePrevThumbs = () => {
-        if (thumbIndex > 0) setThumbIndex(thumbIndex - 1);
-    };
-
-    const handleNextThumbs = () => {
-        if (producto && thumbIndex < producto.imagenesUrls.length - maxVisibleThumbs) {
-            setThumbIndex(thumbIndex + 1);
+    // Funciones de desplazamiento por software (Desplaza la lista arriba o abajo dinámicamente)
+    const scrollThumbs = (direction) => {
+        if (thumbsTrackRef.current) {
+            const scrollAmount = 70; // Tamaño aproximado de una miniatura + su gap
+            thumbsTrackRef.current.scrollBy({
+                top: direction === 'up' ? -scrollAmount : scrollAmount,
+                behavior: 'smooth'
+            });
         }
     };
 
     if (loading) return <div style={{textAlign:'center', padding:'100px', fontSize:'20px'}}>Cargando Almacén Sanandresito...</div>;
     if (!producto) return <div className="container my-5 alert alert-danger">Producto no encontrado.</div>;
 
-    // --- ESTILOS OPTIMIZADOS CON CARRUSEL VERTICAL ---
+    // --- ESTILOS CONTROLADOS Y SEGUROS ---
     const s = {
         wrapper: {
             display: 'flex',
@@ -86,34 +85,35 @@ export default function ProductoDetalle() {
             flexDirection: isMobile ? 'column-reverse' : 'row',
             gap: '15px',                  
             width: isMobile ? '100%' : '650px',
-            height: isMobile ? 'auto' : '550px',
-            alignItems: 'center'      
+            height: isMobile ? 'auto' : '530px',
+            alignItems: 'stretch'      
         },
-        // Contenedor del carrusel vertical (Contiene flechas + ventana)
+        // Contenedor general del carrusel izquierdo
         carouselVerticalContainer: {
             display: 'flex',
-            flexDirection: isMobile ? 'row' : 'column',
+            flexDirection: 'column',
             alignItems: 'center',
-            gap: '5px',
+            justifyContent: 'space-between',
             width: isMobile ? '100%' : '65px',
-            flexShrink: 0
+            height: isMobile ? 'auto' : '100%',
+            flexShrink: 0,
+            gap: '5px'
         },
-        // Ventana rígida que recorta lo que se desborde
-        thumbsWindow: {
-            width: isMobile ? '100%' : '60px',
-            height: isMobile ? 'auto' : `${(55 * maxVisibleThumbs) + (10 * (maxVisibleThumbs - 1))}px`, // Altura exacta para 5 fotos con su gap
-            overflow: 'hidden',
-            position: 'relative'
-        },
-        // Tira interna que se desplaza hacia arriba/abajo mediante transform
+        // El track ahora oculta la barra gris pero permite el desplazamiento interno real mediante JS u scroll invisible
         thumbsTrack: {
             display: 'flex',
             flexDirection: isMobile ? 'row' : 'column',
             gap: '10px',
-            transform: isMobile ? 'none' : `translateY(-${thumbIndex * 65}px)`, // Desplazamiento vertical fluido
-            transition: 'transform 0.3s ease-in-out',
-            overflowX: isMobile ? 'auto' : 'visible',
-            paddingBottom: isMobile ? '10px' : '0'
+            width: '100%',
+            height: isMobile ? 'auto' : '100%',
+            overflowY: isMobile ? 'visible' : 'scroll', // Mantenemos scroll nativo por seguridad interna
+            overflowX: isMobile ? 'auto' : 'hidden',
+            scrollbarWidth: 'none', // Oculta la barra de scroll en Firefox
+            msOverflowStyle: 'none', // Oculta la barra de scroll en IE/Edge
+            paddingBottom: isMobile ? '10px' : '0',
+            flexHydrate: 0,
+            // Truco CSS para ocultar la barra gris de scroll en Chrome/Safari
+            WebkitOverflowScrolling: 'touch'
         },
         thumb: {
             width: '55px',
@@ -125,20 +125,24 @@ export default function ProductoDetalle() {
             padding: '3px',
             cursor: 'pointer',
             backgroundColor: '#fff',
-            transition: 'border-color 0.2s ease'
+            transition: 'all 0.2s ease'
         },
+        // Flechas mejoradas visualmente con formas CSS nativas por si fallan los iconos
         arrowBtn: {
-            background: 'none',
-            border: 'none',
-            cursor: 'pointer',
-            color: '#3483fa',
-            fontSize: '18px',
             display: isMobile ? 'none' : 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            padding: '5px',
-            width: '100%',
-            transition: 'opacity 0.2s',
+            background: '#f8fafc',
+            border: '1px solid #e2e8f0',
+            borderRadius: '50%',
+            cursor: 'pointer',
+            color: '#3483fa',
+            width: '28px',
+            height: '28px',
+            fontSize: '12px',
+            boxShadow: '0 2px 5px rgba(0,0,0,0.05)',
+            zIndex: 2,
+            transition: 'background 0.2s'
         },
         viewer: {
             flex: 1,
@@ -170,44 +174,41 @@ export default function ProductoDetalle() {
 
     return (
         <div className="container-xl">
+            {/* Injectamos estilos CSS en línea rápidos para limpiar la barra de scroll en Chrome de forma definitiva */}
+            <style>{`
+                div::-webkit-scrollbar {
+                    display: none !important;
+                }
+            `}</style>
+
             {/* 1. SECCIÓN SUPERIOR: Galería + Botón Compra */}
             <div style={s.wrapper}>
                 <div style={s.gallerySection}>
                     
-                    {/* SECCIÓN DE MINIATURAS CON FLECHAS */}
+                    {/* SECCIÓN DE MINIATURAS CON CONTROL COMPLETO */}
                     <div style={s.carouselVerticalContainer}>
-                        {/* Flecha Arriba */}
-                        <button 
-                            style={{...s.arrowBtn, opacity: thumbIndex === 0 ? 0.3 : 1}} 
-                            onClick={handlePrevThumbs}
-                            disabled={thumbIndex === 0}
-                        >
-                            <i className="bi bi-chevron-up"></i>
+                        {/* Botón Superior */}
+                        <button style={s.arrowBtn} onClick={() => scrollThumbs('up')} title="Subir">
+                            ▲
                         </button>
 
-                        {/* Ventana contenedora */}
-                        <div style={s.thumbsWindow}>
-                            <div style={s.thumbsTrack}>
-                                {producto.imagenesUrls.map((url, i) => (
-                                    <img 
-                                        key={i} 
-                                        src={url} 
-                                        alt="thumb"
-                                        style={{...s.thumb, borderColor: url === mainImage ? '#3483fa' : '#ddd', borderWidth: url === mainImage ? '2px' : '1px'}}
-                                        onMouseEnter={() => { setMainImage(url); setIsZoomed(false); }}
-                                        onClick={() => { setMainImage(url); setIsZoomed(false); }}
-                                    />
-                                ))}
-                            </div>
+                        {/* Track de miniaturas */}
+                        <div ref={thumbsTrackRef} style={s.thumbsTrack}>
+                            {producto.imagenesUrls.map((url, i) => (
+                                <img 
+                                    key={i} 
+                                    src={url} 
+                                    alt="thumb"
+                                    style={{...s.thumb, borderColor: url === mainImage ? '#3483fa' : '#ddd', borderWidth: url === mainImage ? '2px' : '1px'}}
+                                    onMouseEnter={() => { setMainImage(url); setIsZoomed(false); }}
+                                    onClick={() => { setMainImage(url); setIsZoomed(false); }}
+                                />
+                            ))}
                         </div>
 
-                        {/* Flecha Abajo */}
-                        <button 
-                            style={{...s.arrowBtn, opacity: thumbIndex >= producto.imagenesUrls.length - maxVisibleThumbs ? 0.3 : 1}} 
-                            onClick={handleNextThumbs}
-                            disabled={thumbIndex >= producto.imagenesUrls.length - maxVisibleThumbs}
-                        >
-                            <i className="bi bi-chevron-down"></i>
+                        {/* Botón Inferior */}
+                        <button style={s.arrowBtn} onClick={() => scrollThumbs('down')} title="Bajar">
+                            ▼
                         </button>
                     </div>
 
@@ -241,7 +242,7 @@ export default function ProductoDetalle() {
                 </div>
             </div>
 
-            {/* 2. SECCIÓN INFERIOR: Nueva sección con diseño "Dark Card" */}
+            {/* 2. SECCIÓN INFERIOR */}
             <div style={s.descContainer}>
                 <div className="d-flex align-items-center mb-4 border-bottom pb-3" style={{borderColor: '#475569 !important'}}>
                     <div className="bg-primary p-2 rounded-3 me-3 text-white d-flex align-items-center justify-content-center" style={{width: '40px', height: '40px'}}>
