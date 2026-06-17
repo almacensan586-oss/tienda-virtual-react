@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { db, storage } from "../firebase"; 
 import { 
     collection, addDoc, doc, getDoc, updateDoc, deleteDoc,
-    query, where, getDocs, orderBy, limit, onSnapshot 
+    query, where, getDocs, orderBy, onSnapshot 
 } from "firebase/firestore"; 
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { useSearchParams, useNavigate } from "react-router-dom"; 
@@ -113,9 +113,9 @@ export default function Admin() {
     const [imagenArchivo, setImagenArchivo] = useState(null);
     const [subiendo, setSubiendo] = useState(false);
     const [progreso, setProgreso] = useState(0);
-    const [ultimosProductos, setUltimosProductos] = useState([]);
     
-    // NUEVO: Estado para controlar el texto del buscador de la tabla
+    // Lista de la BD completa cargada de forma reactiva
+    const [todosLosProductos, setTodosLosProductos] = useState([]);
     const [searchTerm, setSearchTerm] = useState("");
 
     const [searchParams, setSearchParams] = useSearchParams();
@@ -123,7 +123,6 @@ export default function Admin() {
     const productoId = searchParams.get("productoId"); 
     const [isEditing, setIsEditing] = useState(false); 
 
-    // Función auxiliar para limpiar tildes y facilitar búsquedas exactas
     const normalizarTexto = (texto) => {
         if (!texto) return '';
         return texto
@@ -178,18 +177,17 @@ export default function Admin() {
         );
     };
 
-    // Escuchar los últimos 10 productos creados en tiempo real
+    // Trae toda la colección sin limitadores para buscar globalmente
     useEffect(() => {
         const q = query(
             collection(db, "productos"), 
-            orderBy("fechaCreacion", "desc"), 
-            limit(10)
+            orderBy("fechaCreacion", "desc")
         );
         const unsubscribe = onSnapshot(q, (snapshot) => {
             const lista = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            setUltimosProductos(lista);
+            setTodosLosProductos(lista);
         }, (error) => {
-            console.error("Error cargando historial de productos:", error);
+            console.error("Error cargando productos:", error);
         });
         return () => unsubscribe();
     }, []);
@@ -279,8 +277,8 @@ export default function Admin() {
 
     const subcategoriasDisponibles = CATEGORIAS_PRODUCTOS.find(c => c.label === formData.categoria)?.options || [];
 
-    // NUEVO: Lógica de filtrado de productos en la tabla según la búsqueda
-    const productosFiltrados = ultimosProductos.filter(prod => {
+    // Filtro global reactivo
+    const productosFiltrados = todosLosProductos.filter(prod => {
         if (!searchTerm.trim()) return true;
         const term = normalizarTexto(searchTerm);
         return (
@@ -384,15 +382,15 @@ export default function Admin() {
                         </div>
                     </form>
 
-                    {/* SECCIÓN 3: HISTORIAL MODIFICADO CON BUSCADOR DE PRODUCTOS */}
+                    {/* SECCIÓN 3: PANEL DEL INVENTARIO GENERAL */}
                     <div className="card shadow-lg border-0 mt-5 text-start">
                         <div className="card-header bg-dark text-white fw-bold py-3">
                             <div className="row align-items-center g-3">
-                                {/* Título */}
                                 <div className="col-12 col-md-5">
-                                    <span><i className="bi bi-list-stars me-2"></i> ÚLTIMOS 10 PRODUCTOS REGISTRADOS</span>
+                                    <span><i className="bi bi-list-stars me-2"></i> INVENTARIO GENERAL DE PRODUCTOS</span>
                                 </div>
-                                {/* Buscador dentro de la barra oscura */}
+                                
+                                {/* BUSCADOR TOTALMENTE LIMPIO Y ARREGLADO */}
                                 <div className="col-12 col-md-5">
                                     <div className="input-group input-group-sm">
                                         <span className="input-group-text bg-secondary border-secondary text-white">
@@ -400,9 +398,9 @@ export default function Admin() {
                                         </span>
                                         <input 
                                             type="text" 
-                                            className="form-control bg-secondary text-white placeholder-light border-secondary" 
-                                            placeholder="Filtrar por código, nombre o marca..." 
-                                            style={{ '--bs-bg-opacity': 0.15 }}
+                                            className="form-control text-white border-secondary" 
+                                            placeholder="Buscar código, producto o marca..." 
+                                            style={{ backgroundColor: "rgba(255, 255, 255, 0.15)" }}
                                             value={searchTerm}
                                             onChange={(e) => setSearchTerm(e.target.value)}
                                         />
@@ -413,7 +411,7 @@ export default function Admin() {
                                         )}
                                     </div>
                                 </div>
-                                {/* Badge de Tiempo Real */}
+                                
                                 <div className="col-12 col-md-2 text-md-end">
                                     <span className="badge bg-primary">Tiempo Real</span>
                                 </div>
@@ -421,9 +419,9 @@ export default function Admin() {
                         </div>
                         
                         <div className="card-body p-0">
-                            <div className="table-responsive">
+                            <div className="table-responsive" style={{maxHeight: '550px', overflowY: 'auto'}}>
                                 <table className="table table-hover table-striped mb-0 align-middle">
-                                    <thead className="table-light">
+                                    <thead className="table-light sticky-top" style={{zIndex: 1}}>
                                         <tr>
                                             <th className="py-3 ps-3" style={{width: '130px'}}>CÓDIGO</th>
                                             <th className="py-3">PRODUCTO</th>
@@ -436,8 +434,9 @@ export default function Admin() {
                                     <tbody>
                                         {productosFiltrados.length === 0 ? (
                                             <tr>
-                                                <td colSpan="6" className="text-center py-4 text-muted">
-                                                    No se encontraron productos en el listado para "{searchTerm}".
+                                                <td colSpan="6" className="text-center py-5 text-muted">
+                                                    <i className="bi bi-search d-block fs-3 mb-2"></i>
+                                                    No se encontraron coincidencias para "{searchTerm}" en la base de datos.
                                                 </td>
                                             </tr>
                                         ) : (
