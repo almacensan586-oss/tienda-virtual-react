@@ -6,7 +6,6 @@ export default function Navbar() {
   const { user, isAdmin, logout } = useAuth();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
   const [isMobile, setIsMobile] = useState(window.innerWidth < 992);
 
   useEffect(() => {
@@ -21,14 +20,6 @@ export default function Navbar() {
   const handleLogout = async () => {
     await logout();
     navigate("/login");
-  };
-
-  const handleSearch = (e) => {
-    e.preventDefault();
-    if (searchTerm.trim()) {
-      navigate(`/productos?search=${searchTerm}`);
-      setMenuOpen(false); // Cerramos menú en móvil tras buscar
-    }
   };
 
   const brandTextStyle = {
@@ -77,22 +68,8 @@ export default function Navbar() {
           </button>
 
           <div className={`collapse navbar-collapse ${menuOpen ? 'show' : ''}`}>
-            {/* --- BARRA DE BÚSQUEDA --- */}
-            <form onSubmit={handleSearch} className="ms-lg-4 mt-3 mt-lg-0 flex-grow-1" style={{ maxWidth: isMobile ? '100%' : '400px' }}>
-              <div className="input-group">
-                <input 
-                  type="text" 
-                  className="form-control form-control-sm bg-light border-0" 
-                  placeholder="Buscar productos..." 
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  style={{ borderRadius: '20px 0 0 20px', paddingLeft: '15px' }}
-                />
-                <button className="btn btn-light btn-sm border-0" type="submit" style={{ borderRadius: '0 20px 20px 0', color: '#3483fa' }}>
-                  <i className="bi bi-search"></i> 🔍
-                </button>
-              </div>
-            </form>
+            
+            {/* El formulario de búsqueda se eliminó de aquí para limpiar el espacio visual */}
 
             <ul className="navbar-nav ms-auto align-items-center">
               <li className="nav-item">
