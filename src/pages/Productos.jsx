@@ -9,6 +9,7 @@ export default function Productos() {
     const [productos, setProductos] = useState([]);
     const [allProducts, setAllProducts] = useState([]);
     const [activeCategory, setActiveCategory] = useState("");
+    const [searchTerm, setSearchTerm] = useState(""); // NUEVO: Estado para el input de búsqueda
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const navigate = useNavigate(); 
@@ -54,7 +55,11 @@ export default function Productos() {
     };
 
     const modificarProducto = (id) => navigate(`/admin?productoId=${id}`); 
-    const handleCategoryChange = (category) => setActiveCategory(category);
+    
+    // Al cambiar de categoría desde el Sidebar, también limpiamos el buscador de texto opcionalmente
+    const handleCategoryChange = (category) => {
+        setActiveCategory(category);
+    };
 
     // Efecto para inicializar la carga de datos de la tienda
     useEffect(() => {
@@ -71,33 +76,28 @@ export default function Productos() {
         loadData();
     }, []);
 
-    // Efecto encargado del filtrado híbrido y flexible
+    // Efecto encargado del filtrado híbrido (Categorías + Buscador por texto)
     useEffect(() => {
         if (allProducts.length === 0) {
             setProductos([]);
             return;
         }
 
-        if (activeCategory === "") {
-            setProductos(allProducts);
-        } else {
+        let resultadoFiltrado = allProducts;
+
+        // 1. FILTRADO POR CATEGORÍA SIDEBAR
+        if (activeCategory !== "") {
             const target = normalizarTexto(activeCategory);
 
-            const filtered = allProducts.filter(product => {
-                // Unificamos los campos de categoría y subcategoría en una sola cadena de búsqueda segura
+            resultadoFiltrado = resultadoFiltrado.filter(product => {
                 const categoriaProd = normalizarTexto(product.categoria);
                 const subcategoriaProd = normalizarTexto(product.subcategoria);
                 const textoCompletoTienda = `${categoriaProd} ${subcategoriaProd}`;
 
-                // CASO 1: Si se hace clic en la categoría principal "Tecnología"
                 if (target === 'tecnologia') {
-                    // Muestra todo lo que contenga la palabra "tecnologia" en su categoría
-                    // (Esto atrapará tanto "Tecnología" como "Tecnología-Celulares")
                     return categoriaProd.includes('tecnologia');
                 }
 
-                // CASO 2: Si es una subcategoría ("celulares", "gamer", "computadores portatiles")
-                // Mapeo flexible para variaciones en el nombre del menú ("Portátiles" vs "Computadores portátiles")
                 if (target === 'celulares' || target === 'celular') {
                     return textoCompletoTienda.includes('celular');
                 }
@@ -120,13 +120,33 @@ export default function Productos() {
                     return textoCompletoTienda.includes('repuesto');
                 }
 
-                // CASO POR DEFECTO: Para cualquier otra categoría del sistema (Mueblería, Cocina, Sonido, etc.)
                 return categoriaProd.includes(target) || subcategoriaProd.includes(target);
             });
-
-            setProductos(filtered);
         }
-    }, [activeCategory, allProducts]);
+
+        // 2. NUEVO: FILTRADO POR TEXTO DEL BUSCADOR (Nombre, código, marca, etc.)
+        if (searchTerm.trim() !== "") {
+            const termNormalized = normalizarTexto(searchTerm);
+
+            resultadoFiltrado = resultadoFiltrado.filter(product => {
+                const nombre = normalizarTexto(product.nombre);
+                const codigo = normalizarTexto(product.codigo);
+                const marca = normalizarTexto(product.marca);
+                const categoria = normalizarTexto(product.categoria);
+                const subcategoria = normalizarTexto(product.subcategoria);
+
+                return (
+                    nombre.includes(termNormalized) ||
+                    codigo.includes(termNormalized) ||
+                    marca.includes(termNormalized) ||
+                    categoria.includes(termNormalized) ||
+                    subcategoria.includes(termNormalized)
+                );
+            });
+        }
+
+        setProductos(resultadoFiltrado);
+    }, [activeCategory, searchTerm, allProducts]);
 
     if (loading) return <div className="text-center my-5 fs-4 text-primary fw-bold">Cargando catálogo...</div>;
     if (error) return <div className="alert alert-danger text-center my-5 mx-auto w-50">{error}</div>;
@@ -147,13 +167,43 @@ export default function Productos() {
 
                 {/* CONTENIDO PRINCIPAL */}
                 <main className="col-lg-9 col-xl-10 ps-lg-4">
-                    <div className="d-flex justify-content-between align-items-center mb-4">
-                        <h2 className="fw-bold h4 mb-0 text-dark">
-                            {activeCategory === "" ? "Todos los productos" : activeCategory}
-                            <span className="badge bg-primary rounded-pill ms-2 fs-6 shadow-sm">{productos.length}</span>
-                        </h2>
+                    
+                    {/* BARRA DE ACCIÓN: TÍTULO + BUSCADOR GLOBAL (Bootstrap 5) */}
+                    <div className="row align-items-center mb-4 g-3">
+                        <div className="col-12 col-md-6 text-start">
+                            <h2 className="fw-bold h4 mb-0 text-dark">
+                                {activeCategory === "" ? "Todos los productos" : activeCategory}
+                                <span className="badge bg-primary rounded-pill ms-2 fs-6 shadow-sm">{productos.length}</span>
+                            </h2>
+                        </div>
+                        
+                        {/* INPUT DEL BUSCADOR INTEGRADO */}
+                        <div className="col-12 col-md-6">
+                            <div className="input-group shadow-sm">
+                                <span className="input-group-text bg-white border-end-0 text-muted">
+                                    <i className="bi bi-search"></i>
+                                </span>
+                                <input 
+                                    type="text" 
+                                    className="form-control border-start-0 ps-1" 
+                                    placeholder="Buscar por nombre, marca o código..." 
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                />
+                                {searchTerm && (
+                                    <button 
+                                        className="btn btn-outline-secondary border-start-0" 
+                                        type="button" 
+                                        onClick={() => setSearchTerm("")}
+                                    >
+                                        <i className="bi bi-x-lg"></i>
+                                    </button>
+                                )}
+                            </div>
+                        </div>
                     </div>
 
+                    {/* REJILLA DE TARJETAS DE PRODUCTOS */}
                     <div className="row row-cols-1 row-cols-md-2 row-cols-xl-4 g-4 mb-5">
                         {productos.map(producto => (
                             <ProductoCard 
@@ -165,10 +215,11 @@ export default function Productos() {
                         ))}
                     </div>
 
+                    {/* CONTROL DE VISTA VACÍA */}
                     {productos.length === 0 && (
                         <div className="alert alert-light text-center border py-5 shadow-sm">
                             <i className="bi bi-search d-block fs-1 mb-3 text-muted"></i>
-                            No encontramos productos en esta categoría por ahora.
+                            No se encontraron productos que coincidan con la selección o búsqueda actual.
                         </div>
                     )}
                 </main>
